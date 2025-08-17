@@ -52,7 +52,7 @@ func main() {
 
 	// Initialize handlers
 	formHandler := handlers.NewFormHandler(formService)
-	responseHandler := handlers.NewResponseHandler(responseService, analyticsService, wsHub)
+	responseHandler := handlers.NewResponseHandler(responseService, analyticsService, formService, wsHub)
 	analyticsHandler := handlers.NewAnalyticsHandler(analyticsService)
 	wsHandler := handlers.NewWebSocketHandler(wsHub)
 
@@ -113,9 +113,13 @@ func main() {
 	// Analytics routes
 	api.Get("/forms/:id/analytics", analyticsHandler.GetAnalytics)
 	api.Post("/forms/:id/analytics/compute", analyticsHandler.ComputeAnalytics)
+	api.Get("/forms/:id/metrics", analyticsHandler.GetRealTimeMetrics)
+	api.Get("/analytics/summary", analyticsHandler.GetAnalyticsSummary)
+	api.Get("/forms/:id/trends", analyticsHandler.GetTrendAnalytics)
 
 	// WebSocket routes
 	app.Get("/ws/forms/:id", wsHandler.HandleConnection)
+	api.Get("/ws/stats", wsHandler.GetConnectionStats)
 
 	// Start server
 	port := config.Port
