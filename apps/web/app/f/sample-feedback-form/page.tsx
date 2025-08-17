@@ -60,23 +60,7 @@ const mockForm: PublicForm = {
 export default function SampleFormPage() {
   return (
     <div>
-      {/* Demo banner */}
-      <div className="bg-green-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-center space-x-2 text-sm">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>
-              This is a demo form. 
-              <a href="/dashboard/sample" className="underline ml-1">
-                View the analytics dashboard
-              </a>
-              {' '}to see real-time updates when you submit!
-            </span>
-          </div>
-        </div>
-      </div>
+
 
       <PublicFormView form={mockForm} />
     </div>

@@ -127,9 +127,9 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("🚀 Server starting on port %s", port)
-	log.Printf("📊 MongoDB connected: %s", maskMongoURI(config.MongoURI))
-	log.Printf("🌐 CORS origin: %s", config.CORSOrigin)
+	log.Printf("Server starting on port %s", port)
+	log.Printf("MongoDB connected: %s", maskMongoURI(config.MongoURI))
+	log.Printf("CORS origin: %s", config.CORSOrigin)
 	
 	log.Fatal(app.Listen(":" + port))
 }

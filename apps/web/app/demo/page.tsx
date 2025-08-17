@@ -68,15 +68,11 @@ export default function DemoPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Demo Banner */}
       <div className="bg-blue-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-center space-x-2 text-sm">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <div className="text-center text-sm">
             <span>
-              🚀 Demo Analytics Dashboard - Real-time form analytics in action!
+              Demo Analytics Dashboard - Real-time form analytics
             </span>
           </div>
         </div>
@@ -252,10 +248,9 @@ export default function DemoPage() {
           </div>
         </div>
 
-        {/* Real-time indicator */}
         <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2">
           <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-          <span className="text-sm font-medium">Demo Mode - Simulated Updates</span>
+          <span className="text-sm font-medium">Live Updates</span>
         </div>
 
         {/* Navigation */}

@@ -2,9 +2,10 @@
 
 import React from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
-import { FieldAnalytics } from '@/lib/types'
+import { FieldAnalytics, FormField } from '@/lib/types'
 
 interface RatingChartProps {
+  field: FormField
   analytics: FieldAnalytics
   chartType?: 'line' | 'bar'
   className?: string
@@ -12,6 +13,7 @@ interface RatingChartProps {
 }
 
 export function RatingChart({
+  field,
   analytics,
   chartType = 'bar',
   className = '',
@@ -168,8 +170,7 @@ export function RatingChart({
         </div>
       )}
 
-      {/* Star visualization for rating scale */}
-      {field.validation?.max && field.validation.max <= 5 && (
+      {showStats && analytics.average && (
         <div className="mt-4 flex items-center justify-center space-x-1">
           {Array.from({ length: field.validation.max }, (_, index) => {
             const rating = index + 1

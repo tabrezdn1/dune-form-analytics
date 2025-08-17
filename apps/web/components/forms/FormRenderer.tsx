@@ -186,28 +186,7 @@ export function FormRenderer({
         </button>
       </div>
 
-      {/* Form summary for debugging (only in development) */}
-      {process.env.NODE_ENV === 'development' && (
-        <details className="mt-8 p-4 bg-gray-100 rounded-lg dark:bg-gray-800">
-          <summary className="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300">
-            Debug Info (Development Only)
-          </summary>
-          <div className="mt-2 text-xs space-y-2">
-            <div>
-              <strong>Values:</strong> {JSON.stringify(values, null, 2)}
-            </div>
-            <div>
-              <strong>Errors:</strong> {JSON.stringify(errors, null, 2)}
-            </div>
-            <div>
-              <strong>Touched:</strong> {JSON.stringify(touched, null, 2)}
-            </div>
-            <div>
-              <strong>Visible Fields:</strong> {visibleFields.map(f => f.id).join(', ')}
-            </div>
-          </div>
-        </details>
-      )}
+
     </form>
   )
 }

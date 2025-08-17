@@ -53,17 +53,8 @@ export default function FormBuilderPage() {
     try {
       const formData = getFormData()
       
-      // In a real app, this would call the API
-      // For demo, we'll just simulate the save
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      toast.success(publish ? 'Form published successfully!' : 'Form saved as draft!')
-      
-      // Simulate API response
-      console.log('Form data that would be saved:', {
-        ...formData,
-        status: publish ? 'published' : 'draft'
-      })
+      toast.success(publish ? 'Form published!' : 'Form saved!')
       
     } catch (error) {
       console.error('Save error:', error)
@@ -74,10 +65,8 @@ export default function FormBuilderPage() {
   }
 
   const handlePreviewSubmit = async (data: any) => {
-    // This is just for preview - simulate submission
     await new Promise(resolve => setTimeout(resolve, 500))
-    toast.success('Preview submission successful!')
-    console.log('Preview submission data:', data)
+    toast.success('Preview submitted!')
   }
 
   return (

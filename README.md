@@ -1,18 +1,18 @@
-# 🚀 Dune Form Analytics
+# Dune Form Analytics
 
 A dynamic, customizable form builder application with real-time analytics. Built with Next.js, Go Fiber, and MongoDB.
 
-## ✨ Features
+## Features
 
-- **🏗️ Form Builder**: Drag-and-drop interface with text, multiple choice, checkbox, and rating fields
-- **📝 Public Forms**: Generate shareable links for form submissions
-- **📊 Live Analytics**: Real-time dashboard with WebSocket updates
-- **🔧 Custom Logic**: Built-in form state management without third-party libraries
-- **🎨 Modern UI**: TailwindCSS with responsive design
-- **🔒 Validation**: Client and server-side form validation
-- **📱 Mobile Ready**: Responsive design for all devices
+- **Form Builder**: Drag-and-drop interface with text, multiple choice, checkbox, and rating fields
+- **Public Forms**: Generate shareable links for form submissions
+- **Live Analytics**: Real-time dashboard with WebSocket updates
+- **Custom Logic**: Built-in form state management without third-party libraries
+- **Modern UI**: TailwindCSS with responsive design
+- **Validation**: Client and server-side form validation
+- **Mobile Ready**: Responsive design for all devices
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -24,7 +24,7 @@ A dynamic, customizable form builder application with real-time analytics. Built
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -74,7 +74,7 @@ make clean        # Clean up containers
 make logs         # View logs
 ```
 
-## 🧪 Testing the Real-Time Feature
+## Testing Real-Time Features
 
 1. **Start the application**: `make dev`
 2. **Seed sample data**: `make seed`
@@ -84,7 +84,7 @@ make logs         # View logs
 4. **Submit responses** in Tab 2 and watch **live updates** in Tab 1
 5. **No page refresh needed** - data updates instantly via WebSocket
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 dune-form-analytics/

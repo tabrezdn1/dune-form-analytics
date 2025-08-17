@@ -29,6 +29,7 @@ export function AnalyticsCard({ field, analytics, className = '' }: AnalyticsCar
       case 'rating':
         return (
           <RatingChart
+            field={field}
             analytics={analytics}
             chartType={chartType as 'line' | 'bar'}
           />

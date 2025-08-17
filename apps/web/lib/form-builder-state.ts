@@ -178,16 +178,14 @@ function createDefaultField(type: FormField['type']): FormField {
     case 'text':
       return {
         ...baseField,
-        label: 'Text Input',
-        validation: {
-          maxLen: 500,
-        },
+        label: 'Text Field',
+        validation: { maxLen: 500 },
       }
 
     case 'mcq':
       return {
         ...baseField,
-        label: 'Multiple Choice Question',
+        label: 'Multiple Choice',
         options: [
           { id: nanoid(6), label: 'Option 1' },
           { id: nanoid(6), label: 'Option 2' },
@@ -197,7 +195,7 @@ function createDefaultField(type: FormField['type']): FormField {
     case 'checkbox':
       return {
         ...baseField,
-        label: 'Checkbox Group',
+        label: 'Checkboxes',
         options: [
           { id: nanoid(6), label: 'Option 1' },
           { id: nanoid(6), label: 'Option 2' },
@@ -207,11 +205,8 @@ function createDefaultField(type: FormField['type']): FormField {
     case 'rating':
       return {
         ...baseField,
-        label: 'Rating Scale',
-        validation: {
-          min: 1,
-          max: 5,
-        },
+        label: 'Rating',
+        validation: { min: 1, max: 5 },
       }
 
     default:

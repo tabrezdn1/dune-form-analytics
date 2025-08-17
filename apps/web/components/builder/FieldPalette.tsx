@@ -109,18 +109,8 @@ export function FieldPalette({ onAddField, className = '' }: FieldPaletteProps) 
         ))}
       </div>
 
-      {/* Instructions */}
-      <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
-          How to use:
-        </h4>
-        <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-          <li>• Click to add field to the end</li>
-          <li>• Drag to specific position</li>
-          <li>• Click field to edit properties</li>
-          <li>• Drag fields to reorder</li>
-        </ul>
-      </div>
+
+
     </div>
   )
 }

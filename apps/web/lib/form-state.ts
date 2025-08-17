@@ -90,54 +90,42 @@ function formReducer(state: FormState, action: FormAction): FormState {
 export function useFormState(fields: FormField[] = []) {
   const [state, dispatch] = useReducer(formReducer, initialFormState)
 
-  // Set field value
   const setFieldValue = useCallback((fieldId: string, value: any) => {
     dispatch({ type: 'SET_FIELD', payload: { fieldId, value } })
   }, [])
 
-  // Set field error
   const setFieldError = useCallback((fieldId: string, error: string) => {
     dispatch({ type: 'SET_ERROR', payload: { fieldId, error } })
   }, [])
 
-  // Clear field error
   const clearFieldError = useCallback((fieldId: string) => {
     dispatch({ type: 'CLEAR_ERROR', payload: { fieldId } })
   }, [])
 
-  // Set field as touched
   const setFieldTouched = useCallback((fieldId: string) => {
     dispatch({ type: 'SET_TOUCHED', payload: { fieldId } })
   }, [])
 
-  // Set submitting state
   const setSubmitting = useCallback((isSubmitting: boolean) => {
     dispatch({ type: 'SET_SUBMITTING', payload: isSubmitting })
   }, [])
 
-  // Set multiple errors at once
   const setErrors = useCallback((errors: Record<string, string>) => {
     dispatch({ type: 'SET_ERRORS', payload: errors })
   }, [])
 
-  // Reset form
   const resetForm = useCallback(() => {
     dispatch({ type: 'RESET_FORM' })
   }, [])
 
-  // Validate single field
   const validateField = useCallback((field: FormField, value: any): string | null => {
-    // Required validation
     if (field.required && (value === undefined || value === null || value === '')) {
       return `${field.label} is required`
     }
 
-    // Skip validation if field is empty and not required
     if (!field.required && (value === undefined || value === null || value === '')) {
       return null
     }
-
-    // Type-specific validation
     switch (field.type) {
       case 'text':
         if (typeof value !== 'string') return 'Invalid text value'

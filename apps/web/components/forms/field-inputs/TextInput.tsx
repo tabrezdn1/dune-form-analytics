@@ -32,7 +32,7 @@ export function TextInput({
     onChange: handleChange,
     onBlur,
     disabled,
-    placeholder: `Enter ${field.label.toLowerCase()}...`,
+    placeholder: field.label,
     className: `form-input ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`,
     'aria-describedby': error ? `${field.id}-error` : undefined,
     'aria-invalid': !!error,
@@ -63,35 +63,19 @@ export function TextInput({
         />
       )}
       
-      {/* Character count for text fields with max length */}
       {field.validation?.maxLen && (
-        <div className="flex justify-between text-sm text-gray-500 mt-1">
-          <span></span>
-          <span>
-            {value.length} / {field.validation.maxLen}
-          </span>
+        <div className="text-right text-sm text-gray-500 mt-1">
+          {value.length} / {field.validation.maxLen}
         </div>
       )}
       
-      {/* Validation hints */}
-      {!error && (field.validation?.minLen || field.validation?.maxLen || field.validation?.pattern) && (
+      {!error && field.validation?.minLen && (
         <div className="form-help">
-          {field.validation?.minLen && field.validation?.maxLen && (
-            <span>Length: {field.validation.minLen}-{field.validation.maxLen} characters</span>
-          )}
-          {field.validation?.minLen && !field.validation?.maxLen && (
-            <span>Minimum {field.validation.minLen} characters</span>
-          )}
-          {!field.validation?.minLen && field.validation?.maxLen && (
-            <span>Maximum {field.validation.maxLen} characters</span>
-          )}
-          {field.validation?.pattern && (
-            <span className="block mt-1">Must match the required format</span>
-          )}
+          Minimum {field.validation.minLen} characters
         </div>
       )}
       
-      {/* Error message */}
+      
       {error && (
         <div id={`${field.id}-error`} className="form-error">
           {error}

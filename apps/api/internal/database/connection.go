@@ -43,7 +43,7 @@ func Connect(mongoURI string) (*Database, error) {
 		return nil, fmt.Errorf("failed to ping MongoDB: %w", err)
 	}
 	
-	log.Println("✅ Connected to MongoDB successfully")
+	log.Println("Connected to MongoDB successfully")
 	
 	// Get database instance
 	db := client.Database("dune_forms")
@@ -72,7 +72,7 @@ func (d *Database) Close() error {
 		return fmt.Errorf("failed to disconnect from MongoDB: %w", err)
 	}
 	
-	log.Println("🔌 Disconnected from MongoDB")
+	log.Println("Disconnected from MongoDB")
 	return nil
 }
 
@@ -136,7 +136,7 @@ func (d *Database) EnsureIndexes() error {
 		return fmt.Errorf("failed to create analytics indexes: %w", err)
 	}
 	
-	log.Println("📊 Database indexes created successfully")
+	log.Println("Database indexes created successfully")
 	return nil
 }
 
