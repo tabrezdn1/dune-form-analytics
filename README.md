@@ -55,7 +55,7 @@ This will start:
 cp env.example .env
 
 # Start services
-docker-compose up --build
+docker compose up --build
 
 # In separate terminals (optional - for local development)
 cd apps/api && go run cmd/server/main.go

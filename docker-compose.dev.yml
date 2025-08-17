@@ -1,0 +1,24 @@
+services:
+  # MongoDB Database only for development
+  mongo:
+    image: mongo:6
+    container_name: dune-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: dune_forms
+    volumes:
+      - mongo_data:/data/db
+      - ./dev/mongo-init:/docker-entrypoint-initdb.d
+    networks:
+      - dune-network
+
+volumes:
+  mongo_data:
+
+networks:
+  dune-network:
+    driver: bridge
