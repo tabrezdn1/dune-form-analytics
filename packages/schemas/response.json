@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Response Schema",
+  "type": "object",
+  "properties": {
+    "_id": {
+      "type": "string",
+      "description": "MongoDB ObjectId"
+    },
+    "formId": {
+      "type": "string",
+      "description": "Reference to form ObjectId"
+    },
+    "submittedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Submission timestamp"
+    },
+    "answers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "fieldId": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9-_]+$",
+            "description": "Field identifier from form schema"
+          },
+          "value": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Text field value"
+              },
+              {
+                "type": "number",
+                "description": "Rating field value"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Checkbox field values (array of option IDs)"
+              }
+            ]
+          }
+        },
+        "required": ["fieldId", "value"]
+      },
+      "minItems": 1,
+      "description": "Field answers"
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "ip": {
+          "type": "string",
+          "description": "Submitter IP address (optional)"
+        },
+        "userAgent": {
+          "type": "string",
+          "description": "User agent string (optional)"
+        },
+        "referrer": {
+          "type": "string",
+          "description": "Referrer URL (optional)"
+        }
+      },
+      "description": "Submission metadata (optional)"
+    }
+  },
+  "required": ["formId", "submittedAt", "answers"]
+}

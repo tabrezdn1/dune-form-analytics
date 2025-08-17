@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Analytics Schema",
+  "type": "object",
+  "properties": {
+    "_id": {
+      "type": "string",
+      "description": "MongoDB ObjectId (same as formId)"
+    },
+    "byField": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z0-9-_]+$": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Total number of responses for this field"
+            },
+            "distribution": {
+              "type": "object",
+              "patternProperties": {
+                "^[a-zA-Z0-9-_]+$": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "description": "Option distribution for mcq/checkbox fields"
+            },
+            "average": {
+              "type": "number",
+              "description": "Average value for rating fields"
+            },
+            "median": {
+              "type": "number",
+              "description": "Median value for rating fields"
+            },
+            "trend": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "value": {
+                    "type": "number"
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": ["date", "value", "count"]
+              },
+              "description": "Trend data for rating fields over time"
+            },
+            "topKeywords": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "keyword": {
+                    "type": "string"
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                },
+                "required": ["keyword", "count"]
+              },
+              "maxItems": 10,
+              "description": "Top keywords for text fields"
+            }
+          },
+          "required": ["count"]
+        }
+      },
+      "description": "Analytics data grouped by field ID"
+    },
+    "totalResponses": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of form responses"
+    },
+    "completionRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Form completion rate (0-1)"
+    },
+    "averageTimeToComplete": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Average time to complete form in seconds"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last update timestamp"
+    }
+  },
+  "required": ["_id", "byField", "totalResponses", "updatedAt"]
+}

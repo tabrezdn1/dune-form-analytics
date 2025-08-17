@@ -1,0 +1,197 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Form Schema",
+  "type": "object",
+  "properties": {
+    "_id": {
+      "type": "string",
+      "description": "MongoDB ObjectId"
+    },
+    "ownerId": {
+      "type": "string",
+      "description": "User ID who owns this form (optional)"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Form title"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Form description (optional)"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "published"],
+      "description": "Form status"
+    },
+    "shareSlug": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9-_]+$",
+      "minLength": 3,
+      "maxLength": 50,
+      "description": "Unique slug for sharing"
+    },
+    "fields": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/field"
+      },
+      "minItems": 1,
+      "maxItems": 50,
+      "description": "Form fields"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["title", "status", "shareSlug", "fields"],
+  "definitions": {
+    "field": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9-_]+$",
+          "description": "Stable field identifier"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["text", "mcq", "checkbox", "rating"],
+          "description": "Field type"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Field label"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether field is required"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9-_]+$"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            },
+            "required": ["id", "label"]
+          },
+          "description": "Options for mcq/checkbox fields"
+        },
+        "validation": {
+          "type": "object",
+          "properties": {
+            "minLen": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "maxLen": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "min": {
+              "type": "number",
+              "description": "Minimum value for rating"
+            },
+            "max": {
+              "type": "number",
+              "description": "Maximum value for rating"
+            },
+            "pattern": {
+              "type": "string",
+              "description": "Regex pattern for text validation"
+            }
+          },
+          "description": "Field validation rules"
+        },
+        "visibility": {
+          "type": "object",
+          "properties": {
+            "whenFieldId": {
+              "type": "string",
+              "description": "Field ID to check for visibility condition"
+            },
+            "op": {
+              "type": "string",
+              "enum": ["eq", "ne", "in", "gt", "lt"],
+              "description": "Comparison operator"
+            },
+            "value": {
+              "description": "Value to compare against"
+            }
+          },
+          "required": ["whenFieldId", "op", "value"],
+          "description": "Conditional visibility rules (optional)"
+        }
+      },
+      "required": ["id", "type", "label", "required"],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": ["mcq", "checkbox"]
+              }
+            }
+          },
+          "then": {
+            "required": ["options"],
+            "properties": {
+              "options": {
+                "minItems": 2,
+                "maxItems": 20
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "rating"
+              }
+            }
+          },
+          "then": {
+            "required": ["validation"],
+            "properties": {
+              "validation": {
+                "required": ["min", "max"],
+                "properties": {
+                  "min": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "max": {
+                    "type": "integer",
+                    "maximum": 10
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
