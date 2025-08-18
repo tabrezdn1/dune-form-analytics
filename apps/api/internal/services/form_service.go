@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // FormService handles form-related business logic
@@ -230,9 +231,11 @@ func (s *FormService) ListForms(ctx context.Context, ownerID *string, page, limi
 	skip := (page - 1) * limit
 	
 	// Find forms with pagination
-	cursor, err := s.collections.Forms.Find(ctx, filter, &mongo.FindOptions{
-		Skip:  &[]int64{int64(skip)}[0],
-		Limit: &[]int64{int64(limit)}[0],
+	skipVal := int64(skip)
+	limitVal := int64(limit)
+	cursor, err := s.collections.Forms.Find(ctx, filter, &options.FindOptions{
+		Skip:  &skipVal,
+		Limit: &limitVal,
 		Sort:  bson.M{"createdAt": -1},
 	})
 	if err != nil {

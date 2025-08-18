@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"fmt"
-	"math"
 	"sort"
 	"time"
 
@@ -13,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // AnalyticsService handles analytics-related business logic
@@ -116,11 +116,12 @@ func (s *AnalyticsService) ComputeAnalytics(ctx context.Context, formID string, 
 	analytics.UpdatedAt = time.Now()
 
 	// Update analytics in database
+	upsert := true
 	_, err = s.collections.Analytics.ReplaceOne(
 		ctx,
 		bson.M{"_id": objectID},
 		analytics,
-		&mongo.ReplaceOptions{Upsert: &[]bool{true}[0]},
+		&options.ReplaceOptions{Upsert: &upsert},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update analytics: %w", err)
@@ -448,11 +449,11 @@ func (s *AnalyticsService) GetAnalyticsSummary(ctx context.Context, ownerID *str
 			CompletionRate: 1.0, // Simplified - would need more complex calculation
 		}
 
-		// Get last response time
-		var lastResponse models.Response
-		err = s.collections.Responses.FindOne(ctx, bson.M{"formId": form.ID}, &mongo.FindOneOptions{
-			Sort: bson.M{"submittedAt": -1},
-		}).Decode(&lastResponse)
+			// Get last response time
+	var lastResponse models.Response
+	err = s.collections.Responses.FindOne(ctx, bson.M{"formId": form.ID}, &options.FindOneOptions{
+		Sort: bson.M{"submittedAt": -1},
+	}).Decode(&lastResponse)
 		if err == nil {
 			summary.LastResponse = &lastResponse.SubmittedAt
 		}
@@ -461,4 +462,110 @@ func (s *AnalyticsService) GetAnalyticsSummary(ctx context.Context, ownerID *str
 	}
 
 	return summaries, nil
+}
+
+// GetTrendAnalytics gets trend analytics for a form over a specific period
+func (s *AnalyticsService) GetTrendAnalytics(ctx context.Context, formID string, period string, ownerID *string) (*models.TrendAnalytics, error) {
+	objectID, err := primitive.ObjectIDFromHex(formID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid form ID: %w", err)
+	}
+
+	// Verify form ownership if ownerID is provided
+	if ownerID != nil {
+		var form models.Form
+		err = s.collections.Forms.FindOne(ctx, bson.M{
+			"_id":     objectID,
+			"ownerId": *ownerID,
+		}).Decode(&form)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				return nil, fmt.Errorf("form not found or access denied")
+			}
+			return nil, fmt.Errorf("failed to verify form ownership: %w", err)
+		}
+	}
+
+	// Calculate date range based on period
+	endDate := time.Now()
+	var startDate time.Time
+	
+	switch period {
+	case "day":
+		startDate = endDate.AddDate(0, 0, -1)
+	case "week":
+		startDate = endDate.AddDate(0, 0, -7)
+	case "month":
+		startDate = endDate.AddDate(0, -1, 0)
+	case "year":
+		startDate = endDate.AddDate(-1, 0, 0)
+	default:
+		startDate = endDate.AddDate(0, 0, -7) // Default to week
+	}
+
+	// Aggregate responses by time period
+	pipeline := []bson.M{
+		{"$match": bson.M{
+			"formId": objectID,
+			"submittedAt": bson.M{
+				"$gte": startDate,
+				"$lte": endDate,
+			},
+		}},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"$dateToString": bson.M{
+					"format": "%Y-%m-%d",
+					"date":   "$submittedAt",
+				},
+			},
+			"count": bson.M{"$sum": 1},
+		}},
+		{"$sort": bson.M{"_id": 1}},
+	}
+
+	cursor, err := s.collections.Responses.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, fmt.Errorf("failed to aggregate trend data: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var results []bson.M
+	if err := cursor.All(ctx, &results); err != nil {
+		return nil, fmt.Errorf("failed to decode trend data: %w", err)
+	}
+
+	// Convert results to trend points
+	trendData := make([]models.TrendPoint, 0, len(results))
+	for _, result := range results {
+		dateStr, ok := result["_id"].(string)
+		if !ok {
+			continue
+		}
+		
+		count, ok := result["count"].(int32)
+		if !ok {
+			continue
+		}
+
+		date, err := time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			continue
+		}
+
+		trendData = append(trendData, models.TrendPoint{
+			Date:  date,
+			Value: float64(count),
+			Count: int(count),
+		})
+	}
+
+	return &models.TrendAnalytics{
+		FormID:    formID,
+		Period:    period,
+		TrendData: trendData,
+		StartDate: startDate,
+		EndDate:   endDate,
+		UpdatedAt: time.Now(),
+	}, nil
 }

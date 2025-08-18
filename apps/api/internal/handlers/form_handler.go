@@ -3,8 +3,8 @@ package handlers
 import (
 	"strconv"
 
+	"github.com/tabrezdn1/dune-form-analytics/api/internal/interfaces"
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/models"
-	"github.com/tabrezdn1/dune-form-analytics/api/internal/services"
 	"github.com/tabrezdn1/dune-form-analytics/api/pkg/utils"
 
 	"github.com/go-playground/validator/v10"
@@ -13,15 +13,15 @@ import (
 
 // FormHandler handles form-related HTTP requests
 type FormHandler struct {
-	formService *services.FormService
+	formService interfaces.FormServiceInterface
 	validator   *validator.Validate
 }
 
 // NewFormHandler creates a new form handler
-func NewFormHandler(formService *services.FormService) *FormHandler {
+func NewFormHandler(formService interfaces.FormServiceInterface, validator *validator.Validate) *FormHandler {
 	return &FormHandler{
 		formService: formService,
-		validator:   validator.New(),
+		validator:   validator,
 	}
 }
 

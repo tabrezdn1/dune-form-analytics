@@ -16,8 +16,8 @@ func ErrorHandler(c *fiber.Ctx, err error) error {
 		code = e.Code
 	}
 
-	// Log the error
-	log.Printf("Error %d: %s - %s %s", code, err.Error(), c.Method(), c.Path())
+	// Log the error with structured format
+	log.Printf("ERROR: HTTP %d - %s %s - %s", code, c.Method(), c.Path(), err.Error())
 
 	// Return appropriate error response
 	switch code {

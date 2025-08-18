@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/tabrezdn1/dune-form-analytics/api/internal/interfaces"
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/models"
-	"github.com/tabrezdn1/dune-form-analytics/api/internal/services"
 	"github.com/tabrezdn1/dune-form-analytics/api/pkg/utils"
 
 	"github.com/go-playground/validator/v10"
@@ -14,15 +14,15 @@ import (
 
 // AnalyticsHandler handles analytics-related HTTP requests
 type AnalyticsHandler struct {
-	analyticsService *services.AnalyticsService
+	analyticsService interfaces.AnalyticsServiceInterface
 	validator        *validator.Validate
 }
 
 // NewAnalyticsHandler creates a new analytics handler
-func NewAnalyticsHandler(analyticsService *services.AnalyticsService) *AnalyticsHandler {
+func NewAnalyticsHandler(analyticsService interfaces.AnalyticsServiceInterface, validator *validator.Validate) *AnalyticsHandler {
 	return &AnalyticsHandler{
 		analyticsService: analyticsService,
-		validator:        validator.New(),
+		validator:        validator,
 	}
 }
 

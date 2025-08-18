@@ -8,9 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/tabrezdn1/dune-form-analytics/api/internal/interfaces"
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/models"
-	"github.com/tabrezdn1/dune-form-analytics/api/internal/services"
-	"github.com/tabrezdn1/dune-form-analytics/api/internal/websocket"
 	"github.com/tabrezdn1/dune-form-analytics/api/pkg/utils"
 
 	"github.com/go-playground/validator/v10"
@@ -20,21 +19,27 @@ import (
 
 // ResponseHandler handles response-related HTTP requests
 type ResponseHandler struct {
-	responseService  *services.ResponseService
-	analyticsService *services.AnalyticsService
-	formService      *services.FormService
-	wsHub            *websocket.Hub
+	responseService  interfaces.ResponseServiceInterface
+	analyticsService interfaces.AnalyticsServiceInterface
+	formService      interfaces.FormServiceInterface
+	wsManager        interfaces.WebSocketManagerInterface
 	validator        *validator.Validate
 }
 
 // NewResponseHandler creates a new response handler
-func NewResponseHandler(responseService *services.ResponseService, analyticsService *services.AnalyticsService, formService *services.FormService, wsHub *websocket.Hub) *ResponseHandler {
+func NewResponseHandler(
+	responseService interfaces.ResponseServiceInterface,
+	analyticsService interfaces.AnalyticsServiceInterface,
+	formService interfaces.FormServiceInterface,
+	wsManager interfaces.WebSocketManagerInterface,
+	validator *validator.Validate,
+) *ResponseHandler {
 	return &ResponseHandler{
 		responseService:  responseService,
 		analyticsService: analyticsService,
 		formService:      formService,
-		wsHub:            wsHub,
-		validator:        validator.New(),
+		wsManager:        wsManager,
+		validator:        validator,
 	}
 }
 
@@ -296,8 +301,14 @@ func (h *ResponseHandler) updateAnalyticsAndBroadcast(formID string, response *m
 		return
 	}
 
-	// Broadcast update to WebSocket clients
-	h.wsHub.BroadcastToForm(formID, "analytics:update", analytics.ByField)
+	// Broadcast analytics update via WebSocket
+	analyticsData := map[string]interface{}{
+		"byField": analytics.ByField,
+		"totalResponses": analytics.TotalResponses,
+		"updatedAt": analytics.UpdatedAt,
+	}
+	
+	h.wsManager.Broadcast(formID, "analytics:update", analyticsData)
 }
 
 // formatAnswerForCSV formats an answer value for CSV export

@@ -27,11 +27,10 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ENV=development
-      - MONGO_URI=mongodb://admin:password123@mongo:27017/dune_forms?authSource=admin
-      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
-      - CORS_ORIGIN=http://localhost:3000
-      - PORT=8080
+      - DUNE_ENVIRONMENT=development
+      - DUNE_DATABASE_URI=mongodb://admin:password123@mongo:27017/dune_forms?authSource=admin
+      - DUNE_SERVER_PORT=8080
+      - DUNE_CORS_ALLOW_ORIGINS=http://localhost:3000
     volumes:
       - ./apps/api:/app
       - /app/tmp
@@ -51,10 +50,14 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - NODE_ENV=development
       - NEXT_PUBLIC_API_URL=http://localhost:8080
       - NEXT_PUBLIC_WS_URL=ws://localhost:8080
+      - INTERNAL_API_URL=http://api:8080
+      - INTERNAL_WS_URL=ws://api:8080
     volumes:
       - ./apps/web:/app
       - /app/node_modules

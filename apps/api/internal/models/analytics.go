@@ -94,6 +94,16 @@ type RealTimeMetrics struct {
 	LastUpdate        time.Time `json:"lastUpdate"`
 }
 
+// TrendAnalytics represents trend analytics for a form over time
+type TrendAnalytics struct {
+	FormID     string       `json:"formId"`
+	Period     string       `json:"period"`
+	TrendData  []TrendPoint `json:"trendData"`
+	StartDate  time.Time    `json:"startDate"`
+	EndDate    time.Time    `json:"endDate"`
+	UpdatedAt  time.Time    `json:"updatedAt"`
+}
+
 // AggregationResult represents the result of a MongoDB aggregation pipeline
 type AggregationResult struct {
 	ID    interface{} `bson:"_id"`

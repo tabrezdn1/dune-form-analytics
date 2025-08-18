@@ -1,6 +1,6 @@
 # Dune Form Analytics
 
-A dynamic, customizable form builder application with real-time analytics. Built with Next.js, Go Fiber, and MongoDB.
+Dynamic form builder application with real-time analytics. Built with Next.js, Go Fiber, and MongoDB.
 
 ## Features
 

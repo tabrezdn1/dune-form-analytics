@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -43,7 +44,7 @@ func Connect(mongoURI string) (*Database, error) {
 		return nil, fmt.Errorf("failed to ping MongoDB: %w", err)
 	}
 	
-	log.Println("Connected to MongoDB successfully")
+	log.Println("INFO: MongoDB connection established")
 	
 	// Get database instance
 	db := client.Database("dune_forms")
@@ -63,6 +64,18 @@ func (d *Database) GetCollections() *Collections {
 	}
 }
 
+// HealthCheck verifies the database connection is healthy
+func (d *Database) HealthCheck() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	
+	if err := d.Client.Ping(ctx, nil); err != nil {
+		return fmt.Errorf("database health check failed: %w", err)
+	}
+	
+	return nil
+}
+
 // Close closes the database connection
 func (d *Database) Close() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -72,7 +85,7 @@ func (d *Database) Close() error {
 		return fmt.Errorf("failed to disconnect from MongoDB: %w", err)
 	}
 	
-	log.Println("Disconnected from MongoDB")
+	log.Println("INFO: Disconnected from MongoDB")
 	return nil
 }
 
@@ -86,17 +99,17 @@ func (d *Database) EnsureIndexes() error {
 	// Forms collection indexes
 	formsIndexes := []mongo.IndexModel{
 		{
-			Keys:    map[string]int{"shareSlug": 1},
+			Keys:    bson.D{{"shareSlug", 1}},
 			Options: options.Index().SetUnique(true),
 		},
 		{
-			Keys: map[string]int{"ownerId": 1},
+			Keys: bson.D{{"ownerId", 1}},
 		},
 		{
-			Keys: map[string]int{"status": 1},
+			Keys: bson.D{{"status", 1}},
 		},
 		{
-			Keys: map[string]int{"createdAt": 1},
+			Keys: bson.D{{"createdAt", 1}},
 		},
 	}
 	
@@ -108,13 +121,13 @@ func (d *Database) EnsureIndexes() error {
 	// Responses collection indexes
 	responsesIndexes := []mongo.IndexModel{
 		{
-			Keys: map[string]int{"formId": 1},
+			Keys: bson.D{{"formId", 1}},
 		},
 		{
-			Keys: map[string]int{"submittedAt": 1},
+			Keys: bson.D{{"submittedAt", 1}},
 		},
 		{
-			Keys: map[string]int{"formId": 1, "submittedAt": -1},
+			Keys: bson.D{{"formId", 1}, {"submittedAt", -1}},
 		},
 	}
 	
@@ -123,27 +136,10 @@ func (d *Database) EnsureIndexes() error {
 		return fmt.Errorf("failed to create responses indexes: %w", err)
 	}
 	
-	// Analytics collection indexes
-	analyticsIndexes := []mongo.IndexModel{
-		{
-			Keys:    map[string]int{"_id": 1},
-			Options: options.Index().SetUnique(true),
-		},
-	}
+	// Analytics collection - _id is already unique by default, no additional indexes needed
 	
-	_, err = collections.Analytics.Indexes().CreateMany(ctx, analyticsIndexes)
-	if err != nil {
-		return fmt.Errorf("failed to create analytics indexes: %w", err)
-	}
-	
-	log.Println("Database indexes created successfully")
+	log.Println("INFO: Database indexes verified")
 	return nil
 }
 
-// HealthCheck performs a health check on the database connection
-func (d *Database) HealthCheck() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	
-	return d.Client.Ping(ctx, nil)
-}
+
