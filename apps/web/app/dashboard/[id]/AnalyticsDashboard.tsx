@@ -17,24 +17,55 @@ export function AnalyticsDashboard({ form, initialAnalytics }: AnalyticsDashboar
   const [analytics, setAnalytics] = useState<Analytics | null>(initialAnalytics || null)
   const [isLoading, setIsLoading] = useState(!initialAnalytics)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
+  const [isConnected, setIsConnected] = useState(false)
 
-  // WebSocket connection for real-time updates
-  const { isConnected, connectionStatus } = useFormAnalyticsWebSocket(
-    form.id,
-    (updatedFields: Record<string, FieldAnalytics>) => {
-      setAnalytics(prev => {
-        if (!prev) return null
-        
-        return {
+  // Handle real-time analytics updates
+  const handleAnalyticsUpdate = (data: any) => {
+    console.log('🔄 handleAnalyticsUpdate called with:', JSON.stringify(data, null, 2))
+    
+    setAnalytics(prev => {
+      console.log('🔄 Previous analytics state:', prev?.totalResponses || 'null')
+      
+      if (!prev) {
+        console.log('❌ No previous analytics state, cannot update')
+        return null
+      }
+      
+      // Handle complete analytics data or just field updates
+      if (data.totalResponses !== undefined) {
+        // Complete analytics update
+        const newAnalytics = {
           ...prev,
-          byField: { ...prev.byField, ...updatedFields },
+          byField: { ...prev.byField, ...data.byField },
+          totalResponses: data.totalResponses,
+          updatedAt: data.updatedAt || new Date().toISOString(),
+        }
+        console.log('✅ New analytics state:', newAnalytics.totalResponses)
+        return newAnalytics
+      } else {
+        // Field-only update (legacy)
+        const newAnalytics = {
+          ...prev,
+          byField: { ...prev.byField, ...data },
           updatedAt: new Date().toISOString(),
         }
-      })
-      setLastUpdated(new Date())
-      toast.success('Analytics updated in real-time!', { duration: 2000 })
-    }
-  )
+        console.log('✅ Updated analytics (field-only):', newAnalytics.totalResponses)
+        return newAnalytics
+      }
+    })
+    
+    setLastUpdated(new Date())
+    console.log('🎉 Analytics state updated - UI should re-render now!')
+    toast.success('📊 Real-time update received!', { duration: 2000 })
+  }
+
+  // WebSocket connection for real-time updates
+  const { isConnected: wsConnected, connectionStatus } = useFormAnalyticsWebSocket(form.id, handleAnalyticsUpdate)
+  
+  // Update connection status
+  React.useEffect(() => {
+    setIsConnected(wsConnected)
+  }, [wsConnected])
 
   // Load analytics if not provided initially
   useEffect(() => {
@@ -49,24 +80,13 @@ export function AnalyticsDashboard({ form, initialAnalytics }: AnalyticsDashboar
       const response = await api.getAnalytics(form.id)
       setAnalytics(response.data)
     } catch (error) {
-      console.error('Failed to load analytics:', error)
       toast.error('Failed to load analytics')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const refreshAnalytics = async () => {
-    try {
-      const response = await api.computeAnalytics(form.id)
-      setAnalytics(response.data)
-      setLastUpdated(new Date())
-      toast.success('Analytics refreshed!')
-    } catch (error) {
-      console.error('Failed to refresh analytics:', error)
-      toast.error('Failed to refresh analytics')
-    }
-  }
+
 
   const exportCSV = async () => {
     try {
@@ -81,7 +101,6 @@ export function AnalyticsDashboard({ form, initialAnalytics }: AnalyticsDashboar
       URL.revokeObjectURL(url)
       toast.success('CSV exported successfully!')
     } catch (error) {
-      console.error('Failed to export CSV:', error)
       toast.error('Failed to export responses')
     }
   }
@@ -131,16 +150,6 @@ export function AnalyticsDashboard({ form, initialAnalytics }: AnalyticsDashboar
               </div>
 
               {/* Action buttons */}
-              <button
-                onClick={refreshAnalytics}
-                className="btn-outline"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Refresh
-              </button>
-
               <button
                 onClick={exportCSV}
                 className="btn-secondary"
@@ -330,23 +339,14 @@ export function AnalyticsDashboard({ form, initialAnalytics }: AnalyticsDashboar
                 Share Form
               </Link>
               
-              <button
-                onClick={loadAnalytics}
-                className="btn-outline"
-              >
-                Try Loading Again
-              </button>
+
             </div>
           </div>
         )}
 
-        {/* Real-time indicator */}
-        {isConnected && (
-          <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2">
-            <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-            <span className="text-sm font-medium">Live Updates Active</span>
-          </div>
-        )}
+
+
+
       </div>
     </div>
   )

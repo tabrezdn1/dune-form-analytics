@@ -18,8 +18,8 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
     onConnect,
     onDisconnect,
     onError,
-    reconnectAttempts = 5,
-    reconnectInterval = 3000,
+    reconnectAttempts = 3,
+    reconnectInterval = 5000,
   } = options
 
   const [isConnected, setIsConnected] = useState(false)
@@ -51,7 +51,7 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
           } else {
             clearInterval(pingInterval)
           }
-        }, 30000) // Ping every 30 seconds
+        }, 45000) // Ping every 45 seconds (less aggressive)
       }
 
       wsRef.current.onmessage = (event) => {
@@ -67,15 +67,19 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
         setIsConnected(false)
         setConnectionStatus('disconnected')
         onDisconnect?.()
+        
+        console.log('WebSocket closed:', event.code, event.reason)
 
-        // Only attempt to reconnect if it wasn't a manual close
-        if (!isManualCloseRef.current && reconnectCountRef.current < reconnectAttempts) {
+        // Only attempt to reconnect if it wasn't a manual close and not a normal close
+        if (!isManualCloseRef.current && event.code !== 1000 && reconnectCountRef.current < reconnectAttempts) {
           reconnectCountRef.current++
-          console.log(`WebSocket disconnected. Attempting to reconnect (${reconnectCountRef.current}/${reconnectAttempts})...`)
+          console.log(`WebSocket disconnected unexpectedly. Reconnecting (${reconnectCountRef.current}/${reconnectAttempts})...`)
           
           reconnectTimeoutRef.current = setTimeout(() => {
             connect()
           }, reconnectInterval)
+        } else if (event.code === 1000) {
+          console.log('WebSocket closed normally')
         }
       }
 
@@ -118,10 +122,24 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
   useEffect(() => {
     connect()
 
+    // Don't disconnect on component unmount - keep connection alive
     return () => {
-      disconnect()
+      // Only disconnect if URL changes, not on unmount
     }
   }, [url])
+  
+  // Cleanup on page unload (browser close/refresh)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      disconnect()
+    }
+    
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      disconnect() // Final cleanup
+    }
+  }, [])
 
   return {
     isConnected,
@@ -134,13 +152,34 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
 
 // Hook specifically for form analytics WebSocket
 export function useFormAnalyticsWebSocket(formId: string, onAnalyticsUpdate?: (analytics: Analytics['byField']) => void) {
-  const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080'
+  // Use different WebSocket URL based on environment
+  const getWebSocketUrl = () => {
+    // Check if we're in a Docker environment by looking for Docker-specific env vars
+    const isDocker = process.env.INTERNAL_WS_URL
+    
+    if (isDocker && typeof window !== 'undefined') {
+      // In Docker, use the host machine's localhost from the browser perspective
+      return process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080'
+    } else {
+      return process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080'
+    }
+  }
+  
+  const WS_URL = getWebSocketUrl()
   const url = `${WS_URL}/ws/forms/${formId}`
 
   return useWebSocket(url, {
     onMessage: (data: WebSocketMessage) => {
-      if (data.type === 'analytics:update' && data.data) {
+      console.log('🔌 RAW WebSocket message received:', JSON.stringify(data, null, 2))
+      
+      if (data.type === 'analytics:update') {
+        console.log('📊 Analytics update detected! Data structure:', JSON.stringify(data.data, null, 2))
         onAnalyticsUpdate?.(data.data)
+        console.log('✅ Analytics handler called - UI should update now!')
+      } else if (data.type === 'connected') {
+        console.log('🎉 WebSocket connected for form', data.formId)
+      } else {
+        console.log('ℹ️ Other message type received:', data.type, 'Full data:', JSON.stringify(data, null, 2))
       }
     },
     onConnect: () => {

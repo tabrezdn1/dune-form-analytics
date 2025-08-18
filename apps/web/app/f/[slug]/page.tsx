@@ -50,7 +50,6 @@ export default async function PublicFormPage({ params }: PublicFormPageProps) {
 
     return <PublicFormView form={form} />
   } catch (error) {
-    console.error('Error loading public form:', error)
     notFound()
   }
 }

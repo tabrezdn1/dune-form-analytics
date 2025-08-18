@@ -40,8 +40,6 @@ export function PublicFormView({ form }: PublicFormViewProps) {
         }
       }
     } catch (error: any) {
-      console.error('Submission error:', error)
-      
       if (error.validationErrors) {
         // Re-throw validation errors to be handled by FormRenderer
         throw error

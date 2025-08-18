@@ -1,5 +1,5 @@
-import React, { useReducer, useCallback } from 'react'
-import { FormField } from './types'
+import React, { useReducer, useCallback, useMemo } from 'react'
+import { FormField, Form } from './types'
 import { nanoid } from 'nanoid'
 
 // Form Builder State Types
@@ -274,6 +274,17 @@ export function useFormBuilder(initialForm?: {
     dispatch({ type: 'RESET_FORM' })
   }, [])
 
+  const loadForm = useCallback((form: { title: string; description?: string; fields: FormField[] }) => {
+    dispatch({ 
+      type: 'LOAD_FORM', 
+      payload: {
+        title: form.title,
+        description: form.description || '',
+        fields: form.fields,
+      }
+    })
+  }, [])
+
   // Utility functions
   const getSelectedField = useCallback(() => {
     return state.fields.find(field => field.id === state.selectedFieldId) || null
@@ -341,11 +352,32 @@ export function useFormBuilder(initialForm?: {
     setError,
     clearError,
     resetForm,
+    loadForm,
 
     // Utilities
     getSelectedField,
     canSave,
     validateForm,
     getFormData,
+    
+    // Enhanced utilities
+    formStats: useMemo(() => ({
+      totalFields: state.fields.length,
+      requiredFields: state.fields.filter(f => f.required).length,
+      optionalFields: state.fields.filter(f => !f.required).length,
+      fieldTypes: state.fields.reduce((acc, field) => {
+        acc[field.type] = (acc[field.type] || 0) + 1
+        return acc
+      }, {} as Record<string, number>),
+    }), [state.fields]),
+    
+    validationSummary: useMemo(() => {
+      const errors = Object.values(state.errors)
+      return {
+        hasErrors: errors.length > 0,
+        errorCount: errors.length,
+        errors: state.errors,
+      }
+    }, [state.errors]),
   }
 }

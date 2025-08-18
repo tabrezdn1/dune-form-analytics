@@ -1,16 +1,20 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { Form } from '@/lib/types'
 import { useFormBuilder } from '@/lib/form-builder-state'
 import { FieldPalette } from '@/components/builder/FieldPalette'
 import { FormCanvas } from '@/components/builder/FormCanvas'
 import { FieldInspector } from '@/components/builder/FieldInspector'
 import { FormRenderer } from '@/components/forms/FormRenderer'
-import { Breadcrumbs } from '@/components/navigation/Breadcrumbs'
 import { api } from '@/lib/api'
 import toast from 'react-hot-toast'
 
-export default function FormBuilderPage() {
+interface FormBuilderClientProps {
+  initialForm?: Form
+}
+
+export default function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
   const [activeTab, setActiveTab] = useState<'build' | 'preview'>('build')
   const [showPreview, setShowPreview] = useState(false)
 
@@ -34,7 +38,15 @@ export default function FormBuilderPage() {
     validateForm,
     getFormData,
     resetForm,
+    loadForm,
   } = useFormBuilder()
+
+  // Load initial form data if editing
+  useEffect(() => {
+    if (initialForm) {
+      loadForm(initialForm)
+    }
+  }, [initialForm, loadForm])
 
   const selectedField = fields.find(field => field.id === selectedFieldId) || null
 
@@ -54,14 +66,22 @@ export default function FormBuilderPage() {
     try {
       const formData = getFormData()
       
-      // Create form
-      const createResponse = await api.createForm(formData)
-      
-      if (!createResponse.success) {
-        throw new Error(createResponse.error || 'Failed to create form')
+      let form
+      if (initialForm) {
+        // Update existing form
+        const updateResponse = await api.updateForm(initialForm.id, formData)
+        if (!updateResponse.success) {
+          throw new Error(updateResponse.error || 'Failed to update form')
+        }
+        form = updateResponse.data
+      } else {
+        // Create new form
+        const createResponse = await api.createForm(formData)
+        if (!createResponse.success) {
+          throw new Error(createResponse.error || 'Failed to create form')
+        }
+        form = createResponse.data
       }
-      
-      const form = createResponse.data
       
       // Publish if requested
       if (publish) {
@@ -74,10 +94,10 @@ export default function FormBuilderPage() {
       toast.success(
         publish 
           ? `Form published! Share link: ${window.location.origin}/f/${form.shareSlug}`
-          : 'Form saved as draft!'
+          : initialForm ? 'Form updated successfully!' : 'Form saved as draft!'
       )
       
-      // Redirect to analytics dashboard
+      // Redirect to analytics dashboard if published
       if (publish) {
         window.location.href = `/dashboard/${form.id}`
       }
@@ -94,97 +114,85 @@ export default function FormBuilderPage() {
     toast.success('Preview submitted!')
   }
 
-  const breadcrumbs = [
-    { label: 'Home', href: '/' },
-    { label: 'Form Builder', current: true }
-  ]
-
-  const headerActions = (
-    <>
-      {isDirty && (
-        <span className="text-xs text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/20 px-2 py-1 rounded">
-          Unsaved changes
-        </span>
-      )}
-      
-      {/* Tab switcher */}
-      <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-        <button
-          onClick={() => setActiveTab('build')}
-          className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-            activeTab === 'build'
-              ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
-          }`}
-        >
-          Build
-        </button>
-        <button
-          onClick={() => setActiveTab('preview')}
-          className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-            activeTab === 'preview'
-              ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
-          }`}
-        >
-          Preview
-        </button>
-      </div>
-
-      {/* Action buttons */}
-      <div className="flex items-center space-x-2">
-        <button
-          onClick={() => handleSave(false)}
-          disabled={!canSave() || isSaving}
-          className="btn-outline"
-        >
-          {isSaving ? 'Saving...' : 'Save Draft'}
-        </button>
-        
-        <button
-          onClick={() => handleSave(true)}
-          disabled={!canSave() || isSaving}
-          className="btn-primary"
-        >
-          {isSaving ? 'Publishing...' : 'Publish'}
-        </button>
-      </div>
-    </>
-  )
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <Breadcrumbs items={breadcrumbs} />
-      
-      {/* Page Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              Form Builder
-            </h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
-              Create dynamic forms with drag-and-drop interface
-            </p>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            {headerActions}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {initialForm ? 'Edit Form' : 'Form Builder'}
+              </h1>
+              
+              {isDirty && (
+                <span className="text-xs text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/20 px-2 py-1 rounded">
+                  Unsaved changes
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center space-x-4">
+              {/* Tab switcher */}
+              <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                <button
+                  onClick={() => setActiveTab('build')}
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                    activeTab === 'build'
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                  }`}
+                >
+                  Build
+                </button>
+                <button
+                  onClick={() => setActiveTab('preview')}
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                    activeTab === 'preview'
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                  }`}
+                >
+                  Preview
+                </button>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handleSave(false)}
+                  disabled={!canSave() || isSaving}
+                  className="btn-outline"
+                >
+                  {isSaving ? 'Saving...' : initialForm ? 'Update Draft' : 'Save Draft'}
+                </button>
+                
+                <button
+                  onClick={() => handleSave(true)}
+                  disabled={!canSave() || isSaving}
+                  className="btn-primary"
+                >
+                  {isSaving ? 'Publishing...' : 'Publish'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      
-      {activeTab === 'build' ? (
-        <div className="grid lg:grid-cols-12 gap-8">
-          {/* Field Palette */}
-          <div className="lg:col-span-3">
-            <div className="sticky top-8">
-              <FieldPalette onAddField={addField} />
-            </div>
-          </div>
 
-          {/* Form Canvas */}
-          <div className="lg:col-span-6">
+      {/* Main content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {activeTab === 'build' ? (
+          <div className="grid lg:grid-cols-12 gap-8">
+            {/* Field Palette */}
+            <div className="lg:col-span-3">
+              <div className="sticky top-8">
+                <FieldPalette onAddField={addField} />
+              </div>
+            </div>
+
+            {/* Form Canvas */}
+            <div className="lg:col-span-6">
               <div className="card p-6">
                 {/* Form metadata */}
                 <div className="mb-6 space-y-4">
@@ -278,6 +286,7 @@ export default function FormBuilderPage() {
             </div>
           </div>
         )}
+      </div>
 
       {/* Floating action button for mobile */}
       <div className="fixed bottom-6 right-6 lg:hidden">

@@ -1,20 +1,32 @@
 import { ApiResponse, PaginatedResponse, Form, PublicForm, FormResponse, SubmitResponseResult, Analytics } from './types'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+// Use internal Docker network URL for server-side requests, public URL for client-side
+const getApiBaseUrl = () => {
+  // Check if we're running on the server (Node.js environment)
+  if (typeof window === 'undefined') {
+    // Server-side: use internal Docker network
+    return process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+  } else {
+    // Client-side: use public URL
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+  }
+}
 
 // API Client Class
 class ApiClient {
-  private baseURL: string
+  private getBaseURL(): string {
+    return getApiBaseUrl()
+  }
 
-  constructor(baseURL: string) {
-    this.baseURL = baseURL
+  constructor() {
+    // No longer need to pass baseURL in constructor
   }
 
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
+    const url = `${this.getBaseURL()}${endpoint}`
     
     const config: RequestInit = {
       headers: {
@@ -144,7 +156,10 @@ class ApiClient {
   ): Promise<ApiResponse<Analytics>> {
     return this.request(`/api/forms/${formId}/analytics/compute`, {
       method: 'POST',
-      body: JSON.stringify(params || {}),
+      body: JSON.stringify({
+        formId,
+        ...params,
+      }),
     })
   }
 
@@ -191,7 +206,7 @@ class ApiClient {
 }
 
 // Create and export API client instance
-export const api = new ApiClient(API_BASE_URL)
+export const api = new ApiClient()
 
 // Utility functions for common operations
 export const formUtils = {
