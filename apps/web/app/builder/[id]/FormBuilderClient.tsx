@@ -258,6 +258,7 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
                 <div className="card">
                   <FieldInspector
                     field={selectedField}
+                    fields={fields}
                     onUpdate={(updates) => {
                       if (selectedField) {
                         updateField(selectedField.id, updates)

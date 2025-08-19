@@ -6,11 +6,12 @@ import { nanoid } from 'nanoid'
 
 interface FieldInspectorProps {
   field: FormField | null
+  fields: FormField[]
   onUpdate: (updates: Partial<FormField>) => void
   className?: string
 }
 
-export function FieldInspector({ field, onUpdate, className = '' }: FieldInspectorProps) {
+export function FieldInspector({ field, fields, onUpdate, className = '' }: FieldInspectorProps) {
   const [localField, setLocalField] = useState<FormField | null>(field)
 
   React.useEffect(() => {
@@ -278,6 +279,272 @@ export function FieldInspector({ field, onUpdate, className = '' }: FieldInspect
           )}
         </div>
       )}
+
+      {/* Conditional Visibility */}
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+        <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-3">Conditional Visibility</h4>
+        
+        {/* Get available fields (only fields that appear before this one) */}
+        {(() => {
+          const currentFieldIndex = fields.findIndex(f => f.id === localField.id)
+          const availableFields = fields.slice(0, currentFieldIndex).filter(f => f.id !== localField.id)
+          
+          if (availableFields.length === 0) {
+            return (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Add fields above this one to create conditional logic
+              </p>
+            )
+          }
+
+          return (
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id={`conditional-${localField.id}`}
+                  checked={!!localField.visibility}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      updateLocalField({
+                        visibility: {
+                          whenFieldId: availableFields[0].id,
+                          op: 'eq',
+                          value: ''
+                        }
+                      })
+                    } else {
+                      updateLocalField({ visibility: undefined })
+                    }
+                  }}
+                  className="form-checkbox"
+                />
+                <label 
+                  htmlFor={`conditional-${localField.id}`}
+                  className="text-sm text-gray-700 dark:text-gray-300"
+                >
+                  Show this field conditionally
+                </label>
+              </div>
+
+              {localField.visibility && (
+                <div className="ml-6 space-y-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Show this field when:
+                  </div>
+                  
+                  {/* Field Selection */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Field
+                    </label>
+                    <select
+                      value={localField.visibility.whenFieldId}
+                      onChange={(e) => {
+                        updateLocalField({
+                          visibility: {
+                            ...localField.visibility!,
+                            whenFieldId: e.target.value,
+                            value: '' // Reset value when field changes
+                          }
+                        })
+                      }}
+                      className="form-select text-sm"
+                    >
+                      {availableFields.map(field => (
+                        <option key={field.id} value={field.id}>
+                          {field.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Operator Selection */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Condition
+                    </label>
+                    <select
+                      value={localField.visibility.op}
+                      onChange={(e) => {
+                        updateLocalField({
+                          visibility: {
+                            ...localField.visibility!,
+                            op: e.target.value as 'eq' | 'ne' | 'in' | 'gt' | 'lt',
+                            value: '' // Reset value when operator changes
+                          }
+                        })
+                      }}
+                      className="form-select text-sm"
+                    >
+                      <option value="eq">equals</option>
+                      <option value="ne">does not equal</option>
+                      {(() => {
+                        const triggerField = availableFields.find(f => f.id === localField.visibility?.whenFieldId)
+                        if (triggerField?.type === 'rating') {
+                          return (
+                            <>
+                              <option value="gt">greater than</option>
+                              <option value="lt">less than</option>
+                            </>
+                          )
+                        }
+                        if (triggerField?.type === 'checkbox') {
+                          return <option value="in">contains</option>
+                        }
+                        return null
+                      })()}
+                    </select>
+                  </div>
+
+                  {/* Value Selection */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Value
+                    </label>
+                    {(() => {
+                      const triggerField = availableFields.find(f => f.id === localField.visibility?.whenFieldId)
+                      
+                      if (!triggerField) {
+                        return (
+                          <input
+                            type="text"
+                            value={localField.visibility.value || ''}
+                            onChange={(e) => {
+                              updateLocalField({
+                                visibility: {
+                                  ...localField.visibility!,
+                                  value: e.target.value
+                                }
+                              })
+                            }}
+                            className="form-input text-sm"
+                            placeholder="Enter value..."
+                          />
+                        )
+                      }
+
+                      // MCQ field - show dropdown of options
+                      if (triggerField.type === 'mcq') {
+                        return (
+                          <select
+                            value={localField.visibility.value || ''}
+                            onChange={(e) => {
+                              updateLocalField({
+                                visibility: {
+                                  ...localField.visibility!,
+                                  value: e.target.value
+                                }
+                              })
+                            }}
+                            className="form-select text-sm"
+                          >
+                            <option value="">Select option...</option>
+                            {triggerField.options?.map(option => (
+                              <option key={option.id} value={option.id}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        )
+                      }
+
+                      // Rating field - show number input
+                      if (triggerField.type === 'rating') {
+                        const min = triggerField.validation?.min || 1
+                        const max = triggerField.validation?.max || 5
+                        return (
+                          <input
+                            type="number"
+                            min={min}
+                            max={max}
+                            value={localField.visibility.value || min}
+                            onChange={(e) => {
+                              updateLocalField({
+                                visibility: {
+                                  ...localField.visibility!,
+                                  value: parseInt(e.target.value)
+                                }
+                              })
+                            }}
+                            className="form-input text-sm"
+                          />
+                        )
+                      }
+
+                      // Checkbox field - show multi-select for "contains" operation
+                      if (triggerField.type === 'checkbox' && localField.visibility.op === 'in') {
+                        return (
+                          <select
+                            value={localField.visibility.value || ''}
+                            onChange={(e) => {
+                              updateLocalField({
+                                visibility: {
+                                  ...localField.visibility!,
+                                  value: e.target.value
+                                }
+                              })
+                            }}
+                            className="form-select text-sm"
+                          >
+                            <option value="">Select option...</option>
+                            {triggerField.options?.map(option => (
+                              <option key={option.id} value={option.id}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        )
+                      }
+
+                      // Text field - show text input
+                      return (
+                        <input
+                          type="text"
+                          value={localField.visibility.value || ''}
+                          onChange={(e) => {
+                            updateLocalField({
+                              visibility: {
+                                ...localField.visibility!,
+                                value: e.target.value
+                              }
+                            })
+                          }}
+                          className="form-input text-sm"
+                          placeholder="Enter value..."
+                        />
+                      )
+                    })()}
+                  </div>
+
+                  {/* Preview */}
+                  {localField.visibility.whenFieldId && localField.visibility.value && (
+                    <div className="text-xs text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-700 p-2 rounded border">
+                      <strong>Preview:</strong> This field will show when "
+                      {availableFields.find(f => f.id === localField.visibility?.whenFieldId)?.label}"
+                      {' '}
+                      {localField.visibility.op === 'eq' && 'equals'}
+                      {localField.visibility.op === 'ne' && 'does not equal'}
+                      {localField.visibility.op === 'gt' && 'is greater than'}
+                      {localField.visibility.op === 'lt' && 'is less than'}
+                      {localField.visibility.op === 'in' && 'contains'}
+                      {' '}
+                      {(() => {
+                        const triggerField = availableFields.find(f => f.id === localField.visibility?.whenFieldId)
+                        if (triggerField?.type === 'mcq' || triggerField?.type === 'checkbox') {
+                          const option = triggerField.options?.find(opt => opt.id === localField.visibility?.value)
+                          return `"${option?.label || localField.visibility?.value}"`
+                        }
+                        return `"${localField.visibility?.value}"`
+                      })()}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })()}
+      </div>
 
       {/* Advanced Properties */}
       <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
