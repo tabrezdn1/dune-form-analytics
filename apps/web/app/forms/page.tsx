@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Form } from '@/lib/types'
 import { api, formUtils } from '@/lib/api'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { Breadcrumbs } from '@/components/navigation/Breadcrumbs'
 import toast from 'react-hot-toast'
 
 export default function MyFormsPage() {
@@ -68,8 +70,14 @@ export default function MyFormsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <ProtectedRoute>
+      <div className="bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Breadcrumbs items={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'My Forms', current: true }
+        ]} />
+        
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -175,7 +183,7 @@ export default function MyFormsPage() {
                         </Link>
                         
                         <Link
-                          href={`/dashboard/${form.id}`}
+                          href={`/dashboard/forms/${form.id}`}
                           className="btn-secondary"
                         >
                           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -225,5 +233,6 @@ export default function MyFormsPage() {
         )}
       </div>
     </div>
+    </ProtectedRoute>
   )
 }

@@ -28,9 +28,13 @@ class ApiClient {
   ): Promise<T> {
     const url = `${this.getBaseURL()}${endpoint}`
     
+    // Get JWT token from localStorage if available
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null
+    
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,
@@ -40,6 +44,16 @@ class ApiClient {
       const response = await fetch(url, config)
       
       if (!response.ok) {
+        // Handle 401 errors (token expired)
+        if (response.status === 401 && typeof window !== 'undefined') {
+          // Clear invalid tokens
+          localStorage.removeItem('authToken')
+          localStorage.removeItem('refreshToken')
+          // Redirect to login
+          window.location.href = '/login'
+          throw new Error('Authentication required')
+        }
+        
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
       }
@@ -131,7 +145,7 @@ class ApiClient {
     if (params?.startDate) queryParams.set('startDate', params.startDate)
     if (params?.endDate) queryParams.set('endDate', params.endDate)
     
-    const url = `${this.baseURL}/api/forms/${formId}/export.csv?${queryParams}`
+    const url = `${this.getBaseURL()}/api/forms/${formId}/export.csv?${queryParams}`
     
     const response = await fetch(url)
     if (!response.ok) {

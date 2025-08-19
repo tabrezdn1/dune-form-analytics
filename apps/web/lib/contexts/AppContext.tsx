@@ -1,14 +1,25 @@
 'use client'
 
-import React, { createContext, useContext, useReducer, ReactNode, useCallback } from 'react'
+import React, { createContext, useContext, useReducer, ReactNode, useCallback, useEffect } from 'react'
+
+// User Type
+interface User {
+  id: string
+  email: string
+  name: string
+  createdAt: string
+  updatedAt: string
+}
 
 // Application State Types
 interface AppState {
   theme: 'light' | 'dark' | 'system'
-  user: null | {
-    id: string
-    email: string
-    name: string
+  auth: {
+    user: User | null
+    token: string | null
+    refreshToken: string | null
+    isAuthenticated: boolean
+    isLoading: boolean
   }
   loading: {
     global: boolean
@@ -16,14 +27,16 @@ interface AppState {
   }
   errors: {
     global: string | null
-    operations: Record<string, string>
+    operations: Record<string, string | null>
   }
 }
 
 // Application Actions
 type AppAction = 
   | { type: 'SET_THEME'; payload: AppState['theme'] }
-  | { type: 'SET_USER'; payload: AppState['user'] }
+  | { type: 'SET_AUTH_USER'; payload: User | null }
+  | { type: 'SET_AUTH_TOKENS'; payload: { token: string; refreshToken: string } }
+  | { type: 'SET_AUTH_LOADING'; payload: boolean }
   | { type: 'LOGOUT' }
   | { type: 'SET_GLOBAL_LOADING'; payload: boolean }
   | { type: 'SET_OPERATION_LOADING'; payload: { operation: string; loading: boolean } }
@@ -34,7 +47,13 @@ type AppAction =
 // Initial State
 const initialState: AppState = {
   theme: 'system',
-  user: null,
+  auth: {
+    user: null,
+    token: null,
+    refreshToken: null,
+    isAuthenticated: false,
+    isLoading: false,
+  },
   loading: {
     global: false,
     operations: {},
@@ -51,11 +70,44 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'SET_THEME':
       return { ...state, theme: action.payload }
       
-    case 'SET_USER':
-      return { ...state, user: action.payload }
+    case 'SET_AUTH_USER':
+      return { 
+        ...state, 
+        auth: { 
+          ...state.auth, 
+          user: action.payload,
+          isAuthenticated: action.payload !== null 
+        } 
+      }
+      
+    case 'SET_AUTH_TOKENS':
+      return { 
+        ...state, 
+        auth: { 
+          ...state.auth, 
+          token: action.payload.token,
+          refreshToken: action.payload.refreshToken,
+          isAuthenticated: true 
+        } 
+      }
+      
+    case 'SET_AUTH_LOADING':
+      return { 
+        ...state, 
+        auth: { ...state.auth, isLoading: action.payload } 
+      }
       
     case 'LOGOUT':
-      return { ...state, user: null }
+      return { 
+        ...state, 
+        auth: {
+          user: null,
+          token: null,
+          refreshToken: null,
+          isAuthenticated: false,
+          isLoading: false,
+        } 
+      }
       
     case 'SET_GLOBAL_LOADING':
       return { 
@@ -109,8 +161,13 @@ interface AppContextValue {
   state: AppState
   actions: {
     setTheme: (theme: AppState['theme']) => void
-    setUser: (user: AppState['user']) => void
+    setAuthUser: (user: User | null) => void
+    setAuthTokens: (token: string, refreshToken: string) => void
+    setAuthLoading: (loading: boolean) => void
+    login: (email: string, password: string) => Promise<void>
+    signup: (email: string, password: string, name: string) => Promise<void>
     logout: () => void
+    refreshToken: () => Promise<void>
     setGlobalLoading: (loading: boolean) => void
     setOperationLoading: (operation: string, loading: boolean) => void
     setGlobalError: (error: string | null) => void
@@ -142,13 +199,135 @@ export function AppProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('theme', theme)
     }, []),
     
-    setUser: useCallback((user: AppState['user']) => {
-      dispatch({ type: 'SET_USER', payload: user })
+    setAuthUser: useCallback((user: User | null) => {
+      dispatch({ type: 'SET_AUTH_USER', payload: user })
+    }, []),
+    
+    setAuthTokens: useCallback((token: string, refreshToken: string) => {
+      dispatch({ type: 'SET_AUTH_TOKENS', payload: { token, refreshToken } })
+      localStorage.setItem('authToken', token)
+      localStorage.setItem('refreshToken', refreshToken)
+    }, []),
+    
+    setAuthLoading: useCallback((loading: boolean) => {
+      dispatch({ type: 'SET_AUTH_LOADING', payload: loading })
+    }, []),
+    
+    login: useCallback(async (email: string, password: string) => {
+      dispatch({ type: 'SET_AUTH_LOADING', payload: true })
+      
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        })
+        
+        const data = await response.json()
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Login failed')
+        }
+        
+        // Set user and tokens
+        dispatch({ type: 'SET_AUTH_USER', payload: data.data.user })
+        dispatch({ type: 'SET_AUTH_TOKENS', payload: { 
+          token: data.data.accessToken, 
+          refreshToken: data.data.refreshToken 
+        }})
+        
+        localStorage.setItem('authToken', data.data.accessToken)
+        localStorage.setItem('refreshToken', data.data.refreshToken)
+        
+      } catch (error) {
+        dispatch({ type: 'SET_GLOBAL_ERROR', payload: error instanceof Error ? error.message : 'Login failed' })
+        throw error
+      } finally {
+        dispatch({ type: 'SET_AUTH_LOADING', payload: false })
+      }
+    }, []),
+    
+    signup: useCallback(async (email: string, password: string, name: string) => {
+      dispatch({ type: 'SET_AUTH_LOADING', payload: true })
+      
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password, name }),
+        })
+        
+        const data = await response.json()
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Signup failed')
+        }
+        
+        // Set user and tokens
+        dispatch({ type: 'SET_AUTH_USER', payload: data.data.user })
+        dispatch({ type: 'SET_AUTH_TOKENS', payload: { 
+          token: data.data.accessToken, 
+          refreshToken: data.data.refreshToken 
+        }})
+        
+        localStorage.setItem('authToken', data.data.accessToken)
+        localStorage.setItem('refreshToken', data.data.refreshToken)
+        
+      } catch (error) {
+        dispatch({ type: 'SET_GLOBAL_ERROR', payload: error instanceof Error ? error.message : 'Signup failed' })
+        throw error
+      } finally {
+        dispatch({ type: 'SET_AUTH_LOADING', payload: false })
+      }
     }, []),
     
     logout: useCallback(() => {
       dispatch({ type: 'LOGOUT' })
       localStorage.removeItem('authToken')
+      localStorage.removeItem('refreshToken')
+    }, []),
+    
+    refreshToken: useCallback(async () => {
+      const refreshToken = localStorage.getItem('refreshToken')
+      if (!refreshToken) {
+        dispatch({ type: 'LOGOUT' })
+        return
+      }
+      
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ refreshToken }),
+        })
+        
+        const data = await response.json()
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Token refresh failed')
+        }
+        
+        // Update tokens
+        dispatch({ type: 'SET_AUTH_TOKENS', payload: { 
+          token: data.data.accessToken, 
+          refreshToken: data.data.refreshToken 
+        }})
+        
+        localStorage.setItem('authToken', data.data.accessToken)
+        localStorage.setItem('refreshToken', data.data.refreshToken)
+        
+      } catch (error) {
+        dispatch({ type: 'LOGOUT' })
+        localStorage.removeItem('authToken')
+        localStorage.removeItem('refreshToken')
+        throw error
+      }
     }, []),
     
     setGlobalLoading: useCallback((loading: boolean) => {
@@ -171,6 +350,43 @@ export function AppProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'CLEAR_ERRORS' })
     }, []),
   }
+
+  // Initialize auth state from localStorage on mount
+  useEffect(() => {
+    const token = localStorage.getItem('authToken')
+    const refreshToken = localStorage.getItem('refreshToken')
+    
+    if (token && refreshToken) {
+      // Set loading while verifying token
+      dispatch({ type: 'SET_AUTH_LOADING', payload: true })
+      
+      // Verify token is still valid by calling /me endpoint
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success && data.data) {
+          dispatch({ type: 'SET_AUTH_USER', payload: data.data })
+          dispatch({ type: 'SET_AUTH_TOKENS', payload: { token, refreshToken } })
+        } else {
+          // Token is invalid, clear storage
+          localStorage.removeItem('authToken')
+          localStorage.removeItem('refreshToken')
+        }
+      })
+      .catch(() => {
+        // Token is invalid, clear storage
+        localStorage.removeItem('authToken')
+        localStorage.removeItem('refreshToken')
+      })
+      .finally(() => {
+        dispatch({ type: 'SET_AUTH_LOADING', payload: false })
+      })
+    }
+  }, [])
 
   const contextValue: AppContextValue = {
     state,

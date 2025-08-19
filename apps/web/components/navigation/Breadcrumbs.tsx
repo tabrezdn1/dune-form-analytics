@@ -66,7 +66,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
 function generateBreadcrumbs(pathname: string): BreadcrumbItem[] {
   const segments = pathname.split('/').filter(Boolean)
   const breadcrumbs: BreadcrumbItem[] = [
-    { label: 'Home', href: '/' }
+    { label: 'Dashboard', href: '/dashboard' }
   ]
 
   let currentPath = ''

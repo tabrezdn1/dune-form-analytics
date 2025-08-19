@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { api } from '@/lib/api'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import FormBuilderClient from './FormBuilderClient'
 
 interface BuilderPageProps {
@@ -39,7 +40,11 @@ export default async function EditFormPage({ params }: BuilderPageProps) {
 
     const form = response.data
 
-    return <FormBuilderClient initialForm={form} />
+    return (
+      <ProtectedRoute>
+        <FormBuilderClient initialForm={form} />
+      </ProtectedRoute>
+    )
   } catch (error) {
     notFound()
   }

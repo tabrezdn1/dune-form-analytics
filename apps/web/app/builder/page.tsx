@@ -7,6 +7,7 @@ import { FormCanvas } from '@/components/builder/FormCanvas'
 import { FieldInspector } from '@/components/builder/FieldInspector'
 import { FormRenderer } from '@/components/forms/FormRenderer'
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { api } from '@/lib/api'
 import toast from 'react-hot-toast'
 
@@ -62,6 +63,9 @@ export default function FormBuilderPage() {
       }
       
       const form = createResponse.data
+      if (!form) {
+        throw new Error('Failed to create form')
+      }
       
       // Publish if requested
       if (publish) {
@@ -79,7 +83,7 @@ export default function FormBuilderPage() {
       
       // Redirect to analytics dashboard
       if (publish) {
-        window.location.href = `/dashboard/${form.id}`
+        window.location.href = `/dashboard/forms/${form.id}`
       }
       
     } catch (error) {
@@ -95,7 +99,7 @@ export default function FormBuilderPage() {
   }
 
   const breadcrumbs = [
-    { label: 'Home', href: '/' },
+    { label: 'Dashboard', href: '/dashboard' },
     { label: 'Form Builder', current: true }
   ]
 
@@ -153,7 +157,8 @@ export default function FormBuilderPage() {
   )
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <ProtectedRoute>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Breadcrumbs items={breadcrumbs} />
       
       {/* Page Header */}
@@ -332,5 +337,6 @@ export default function FormBuilderPage() {
         </div>
       )}
     </div>
+    </ProtectedRoute>
   )
 }

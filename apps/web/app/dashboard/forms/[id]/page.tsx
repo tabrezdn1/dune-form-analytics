@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { AnalyticsDashboard } from './AnalyticsDashboard'
+import { FormAnalytics } from './FormAnalytics'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { Breadcrumbs } from '@/components/navigation/Breadcrumbs'
 import { api } from '@/lib/api'
 
 interface DashboardPageProps {
@@ -44,9 +46,16 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
 
     const form = response.data
 
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+          return (
+      <ProtectedRoute>
+        <div className="bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Breadcrumbs items={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'My Forms', href: '/forms' },
+            { label: `${form.title} - Analytics`, current: true }
+          ]} />
+          
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
               {form.title} - Analytics
@@ -56,9 +65,10 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
             </p>
           </div>
           
-          <AnalyticsDashboard form={form} />
+          <FormAnalytics form={form} />
         </div>
       </div>
+    </ProtectedRoute>
     )
   } catch (error) {
     notFound()

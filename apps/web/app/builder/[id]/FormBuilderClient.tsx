@@ -7,6 +7,7 @@ import { FieldPalette } from '@/components/builder/FieldPalette'
 import { FormCanvas } from '@/components/builder/FormCanvas'
 import { FieldInspector } from '@/components/builder/FieldInspector'
 import { FormRenderer } from '@/components/forms/FormRenderer'
+import { Breadcrumbs } from '@/components/navigation/Breadcrumbs'
 import { api } from '@/lib/api'
 import toast from 'react-hot-toast'
 
@@ -74,6 +75,9 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
           throw new Error(updateResponse.error || 'Failed to update form')
         }
         form = updateResponse.data
+        if (!form) {
+          throw new Error('Failed to update form - no data returned')
+        }
       } else {
         // Create new form
         const createResponse = await api.createForm(formData)
@@ -81,6 +85,9 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
           throw new Error(createResponse.error || 'Failed to create form')
         }
         form = createResponse.data
+        if (!form) {
+          throw new Error('Failed to create form - no data returned')
+        }
       }
       
       // Publish if requested
@@ -99,7 +106,7 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
       
       // Redirect to analytics dashboard if published
       if (publish) {
-        window.location.href = `/dashboard/${form.id}`
+        window.location.href = `/dashboard/forms/${form.id}`
       }
       
     } catch (error) {
@@ -182,6 +189,12 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
 
       {/* Main content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Breadcrumbs items={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'My Forms', href: '/forms' },
+          { label: `Edit: ${title || 'Untitled Form'}`, current: true }
+        ]} />
+        
         {activeTab === 'build' ? (
           <div className="grid lg:grid-cols-12 gap-8">
             {/* Field Palette */}

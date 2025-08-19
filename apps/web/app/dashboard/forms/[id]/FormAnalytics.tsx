@@ -8,12 +8,12 @@ import { AnalyticsCard } from '@/components/charts/AnalyticsCard'
 import { api, formUtils } from '@/lib/api'
 import toast from 'react-hot-toast'
 
-interface AnalyticsDashboardProps {
+interface FormAnalyticsProps {
   form: Form
   initialAnalytics?: Analytics
 }
 
-export function AnalyticsDashboard({ form, initialAnalytics }: AnalyticsDashboardProps) {
+export function FormAnalytics({ form, initialAnalytics }: FormAnalyticsProps) {
   const [analytics, setAnalytics] = useState<Analytics | null>(initialAnalytics || null)
   const [isLoading, setIsLoading] = useState(!initialAnalytics)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
