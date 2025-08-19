@@ -240,15 +240,12 @@ func (w *WebSocketManager) broadcastToRoom(message *Message) {
 	w.mutex.RLock()
 	
 	// Log active rooms for operational visibility
-	log.Printf("INFO: Active rooms: %v", func() []string {
-		var rooms []string
-		for formID, clients := range w.rooms {
-			if len(clients) > 0 {
-				rooms = append(rooms, fmt.Sprintf("%s(%d)", formID, len(clients)))
-			}
+	log.Printf("INFO: Attempting broadcast to form: %s", message.FormID)
+	for formID, clients := range w.rooms {
+		if len(clients) > 0 {
+			log.Printf("INFO: Room %s has %d clients", formID, len(clients))
 		}
-		return rooms
-	}())
+	}
 	
 	room, exists := w.rooms[message.FormID]
 	w.mutex.RUnlock()

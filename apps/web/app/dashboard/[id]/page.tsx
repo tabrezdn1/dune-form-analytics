@@ -56,7 +56,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
             </p>
           </div>
           
-          <AnalyticsDashboard formId={params.id} form={form} />
+          <AnalyticsDashboard form={form} />
         </div>
       </div>
     )

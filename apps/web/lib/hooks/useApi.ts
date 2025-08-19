@@ -115,7 +115,7 @@ export function useFormData(formId?: string) {
     async (page = 1, limit = 20) => {
       actions.setOperationLoading('fetchForms', true)
       try {
-        const result = await api.getForms(page, limit)
+        const result = await api.listForms(page, limit)
         actions.setOperationError('fetchForms', null)
         return result
       } catch (error) {

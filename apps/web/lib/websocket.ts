@@ -12,6 +12,7 @@ interface UseWebSocketOptions {
   reconnectInterval?: number
 }
 
+// Custom React hook for WebSocket connections
 export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
   const {
     onMessage,
@@ -28,30 +29,34 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const reconnectCountRef = useRef(0)
   const isManualCloseRef = useRef(false)
+  const isConnectingRef = useRef(false)
 
   const connect = () => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
+    // Prevent multiple simultaneous connection attempts
+    if (isConnectingRef.current || wsRef.current?.readyState === WebSocket.OPEN) {
       return
     }
 
-    try {
-      setConnectionStatus('connecting')
-      wsRef.current = new WebSocket(url)
+    isConnectingRef.current = true
+
+    // Close any existing connection before creating new one
+    if (wsRef.current) {
+      wsRef.current.close()
+      wsRef.current = null
+    }
+
+    // Delay connection to prevent rapid reconnection cycles
+    setTimeout(() => {
+      try {
+        setConnectionStatus('connecting')
+        wsRef.current = new WebSocket(url)
 
       wsRef.current.onopen = () => {
+        isConnectingRef.current = false
         setIsConnected(true)
         setConnectionStatus('connected')
         reconnectCountRef.current = 0
         onConnect?.()
-        
-        // Send ping to keep connection alive
-        const pingInterval = setInterval(() => {
-          if (wsRef.current?.readyState === WebSocket.OPEN) {
-            wsRef.current.send(JSON.stringify({ type: 'ping', timestamp: Date.now() }))
-          } else {
-            clearInterval(pingInterval)
-          }
-        }, 45000) // Ping every 45 seconds (less aggressive)
       }
 
       wsRef.current.onmessage = (event) => {
@@ -67,31 +72,29 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
         setIsConnected(false)
         setConnectionStatus('disconnected')
         onDisconnect?.()
-        
-        console.log('WebSocket closed:', event.code, event.reason)
 
-        // Only attempt to reconnect if it wasn't a manual close and not a normal close
+        // Attempt reconnection with exponential backoff
         if (!isManualCloseRef.current && event.code !== 1000 && reconnectCountRef.current < reconnectAttempts) {
           reconnectCountRef.current++
-          console.log(`WebSocket disconnected unexpectedly. Reconnecting (${reconnectCountRef.current}/${reconnectAttempts})...`)
+          
+          const backoffDelay = Math.min(1000 * Math.pow(2, reconnectCountRef.current - 1), 8000)
           
           reconnectTimeoutRef.current = setTimeout(() => {
             connect()
-          }, reconnectInterval)
-        } else if (event.code === 1000) {
-          console.log('WebSocket closed normally')
+          }, backoffDelay)
         }
       }
 
       wsRef.current.onerror = (error) => {
+        isConnectingRef.current = false
         setConnectionStatus('error')
         onError?.(error)
-        console.error('WebSocket error:', error)
       }
-    } catch (error) {
-      setConnectionStatus('error')
-      console.error('Failed to create WebSocket connection:', error)
-    }
+      } catch (error) {
+        isConnectingRef.current = false
+        setConnectionStatus('error')
+      }
+    }, 100) // Delay to prevent rapid reconnection cycles
   }
 
   const disconnect = () => {
@@ -120,15 +123,20 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
   }
 
   useEffect(() => {
-    connect()
+    let isActive = true
+    
+    // React Strict Mode compatible connection
+    if (isActive) {
+      connect()
+    }
 
-    // Don't disconnect on component unmount - keep connection alive
     return () => {
-      // Only disconnect if URL changes, not on unmount
+      isActive = false
+      disconnect()
     }
   }, [url])
   
-  // Cleanup on page unload (browser close/refresh)
+  // Handle browser page unload events
   useEffect(() => {
     const handleBeforeUnload = () => {
       disconnect()
@@ -137,7 +145,6 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
-      disconnect() // Final cleanup
     }
   }, [])
 
@@ -150,19 +157,10 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
   }
 }
 
-// Hook specifically for form analytics WebSocket
+// Hook for form analytics WebSocket connection
 export function useFormAnalyticsWebSocket(formId: string, onAnalyticsUpdate?: (analytics: Analytics['byField']) => void) {
-  // Use different WebSocket URL based on environment
   const getWebSocketUrl = () => {
-    // Check if we're in a Docker environment by looking for Docker-specific env vars
-    const isDocker = process.env.INTERNAL_WS_URL
-    
-    if (isDocker && typeof window !== 'undefined') {
-      // In Docker, use the host machine's localhost from the browser perspective
-      return process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080'
-    } else {
-      return process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080'
-    }
+    return process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080'
   }
   
   const WS_URL = getWebSocketUrl()
@@ -170,26 +168,18 @@ export function useFormAnalyticsWebSocket(formId: string, onAnalyticsUpdate?: (a
 
   return useWebSocket(url, {
     onMessage: (data: WebSocketMessage) => {
-      console.log('🔌 RAW WebSocket message received:', JSON.stringify(data, null, 2))
-      
       if (data.type === 'analytics:update') {
-        console.log('📊 Analytics update detected! Data structure:', JSON.stringify(data.data, null, 2))
         onAnalyticsUpdate?.(data.data)
-        console.log('✅ Analytics handler called - UI should update now!')
-      } else if (data.type === 'connected') {
-        console.log('🎉 WebSocket connected for form', data.formId)
-      } else {
-        console.log('ℹ️ Other message type received:', data.type, 'Full data:', JSON.stringify(data, null, 2))
       }
     },
     onConnect: () => {
-      console.log(`Connected to analytics WebSocket for form ${formId}`)
+      // Connection established
     },
     onDisconnect: () => {
-      console.log(`Disconnected from analytics WebSocket for form ${formId}`)
+      // Connection closed
     },
     onError: (error) => {
-      console.error(`WebSocket error for form ${formId}:`, error)
+      console.error(`WebSocket connection error for form ${formId}:`, error)
     },
   })
 }

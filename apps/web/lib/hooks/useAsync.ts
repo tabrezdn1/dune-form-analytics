@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 
-// Robust async operation hook with error handling
+// Custom hook for managing async operations with loading states and error handling
 export interface UseAsyncState<T> {
   data: T | null
   error: string | null
@@ -41,10 +41,10 @@ export function useAsync<T = any>(
 
     setState(prev => ({ ...prev, loading: true, error: null }))
     
+    const promise = asyncFunction(...args)
+    currentPromiseRef.current = promise
+    
     try {
-      const promise = asyncFunction(...args)
-      currentPromiseRef.current = promise
-      
       const result = await promise
       
       // Check if this is still the current promise and component is mounted
