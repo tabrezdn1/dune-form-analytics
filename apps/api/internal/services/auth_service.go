@@ -38,7 +38,7 @@ func NewAuthService(collections *database.Collections, accessSecret, refreshSecr
 		collections:   collections,
 		accessSecret:  accessSecret,
 		refreshSecret: refreshSecret,
-		accessTTL:     15 * time.Minute, // 15 minutes for access token
+		accessTTL:     60 * time.Minute, // 60 minutes for access token
 		refreshTTL:    7 * 24 * time.Hour, // 7 days for refresh token
 	}
 }
