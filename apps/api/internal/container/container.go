@@ -34,6 +34,7 @@ type ServiceContainer struct {
 	FormService      interfaces.FormServiceInterface
 	ResponseService  interfaces.ResponseServiceInterface
 	AnalyticsService interfaces.AnalyticsServiceInterface
+	AuthService      interfaces.AuthServiceInterface
 }
 
 // HandlerContainer holds all handlers
@@ -41,6 +42,7 @@ type HandlerContainer struct {
 	FormHandler      *handlers.FormHandler
 	ResponseHandler  *handlers.ResponseHandler
 	AnalyticsHandler *handlers.AnalyticsHandler
+	AuthHandler      *handlers.AuthHandler
 }
 
 // NewContainer creates a new dependency injection container
@@ -57,6 +59,7 @@ func NewContainer() *fx.App {
 		fx.Provide(NewFormService),
 		fx.Provide(NewResponseService),
 		fx.Provide(NewAnalyticsService),
+		fx.Provide(NewAuthService),
 
 		// WebSocket
 		fx.Provide(NewWebSocketManager),
@@ -65,12 +68,16 @@ func NewContainer() *fx.App {
 		fx.Provide(NewFormHandler),
 		fx.Provide(NewResponseHandler),
 		fx.Provide(NewAnalyticsHandler),
+		fx.Provide(NewAuthHandler),
 
 		// Fiber App
 		fx.Provide(NewFiberApp),
 
 		// Start the application
 		fx.Invoke(StartServer),
+		
+		// Explicitly invoke auth handler creation to ensure it's created
+		fx.Invoke(func(*handlers.AuthHandler) {}),
 	)
 }
 
@@ -160,6 +167,8 @@ func StartServer(
 	formHandler *handlers.FormHandler,
 	responseHandler *handlers.ResponseHandler,
 	analyticsHandler *handlers.AnalyticsHandler,
+	authHandler *handlers.AuthHandler,
+	authService *services.AuthService,
 	wsManager interfaces.WebSocketManagerInterface,
 ) {
 	lc.Append(fx.Hook{
@@ -172,8 +181,13 @@ func StartServer(
 			// Start WebSocket manager
 			go wsManager.Run()
 
+			// Run database migrations (create test user)
+			if err := db.RunMigrations(); err != nil {
+				return err
+			}
+
 			// Setup routes
-			setupRoutes(app, cfg, db, formHandler, responseHandler, analyticsHandler, wsManager)
+			setupRoutes(app, cfg, db, formHandler, responseHandler, analyticsHandler, authHandler, authService, wsManager)
 
 			// Start server in goroutine
 			go func() {
@@ -191,4 +205,15 @@ func StartServer(
 			return db.Close()
 		},
 	})
+}
+
+// NewAuthService creates a new authentication service
+func NewAuthService(cfg *config.Config, db interfaces.DatabaseInterface) *services.AuthService {
+	collections := db.GetCollections()
+	return services.NewAuthService(collections, cfg.Auth.AccessTokenSecret, cfg.Auth.RefreshTokenSecret)
+}
+
+// NewAuthHandler creates a new authentication handler
+func NewAuthHandler(authService *services.AuthService, validator *validator.Validate) *handlers.AuthHandler {
+	return handlers.NewAuthHandler(authService, validator)
 }

@@ -1,5 +1,5 @@
 # Multi-stage Dockerfile for Go Fiber API
-FROM golang:1.22-alpine AS base
+FROM golang:1.23-alpine AS base
 
 # Install air for hot reload in development
 RUN go install github.com/cosmtrek/air@v1.49.0
@@ -27,7 +27,7 @@ EXPOSE 8080
 CMD ["air", "-c", ".air.toml"]
 
 # Builder stage
-FROM golang:1.22-alpine AS builder
+FROM golang:1.23-alpine AS builder
 WORKDIR /app
 
 # Copy go mod files

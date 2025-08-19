@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/database"
@@ -68,7 +69,7 @@ func (s *FormService) CreateForm(ctx context.Context, req *models.CreateFormRequ
 	_, err = s.collections.Analytics.InsertOne(ctx, analytics)
 	if err != nil {
 		// Log error but don't fail form creation
-		fmt.Printf("Warning: failed to initialize analytics for form %s: %v\n", form.ID.Hex(), err)
+		log.Printf("WARN: Failed to initialize analytics for form %s: %v", form.ID.Hex(), err)
 	}
 	
 	return form.ToResponse(), nil
@@ -76,12 +77,12 @@ func (s *FormService) CreateForm(ctx context.Context, req *models.CreateFormRequ
 
 // GetFormByID retrieves a form by its ID
 func (s *FormService) GetFormByID(ctx context.Context, formID string, ownerID *string) (*models.FormResponse, error) {
-	objectID, err := primitive.ObjectIDFromHex(formID)
+	formObjectID, err := primitive.ObjectIDFromHex(formID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid form ID: %w", err)
 	}
 	
-	filter := bson.M{"_id": objectID}
+	filter := bson.M{"_id": formObjectID}
 	
 	// If ownerID is provided, add it to filter for access control
 	if ownerID != nil {
@@ -153,7 +154,7 @@ func (s *FormService) UpdateForm(ctx context.Context, formID string, req *models
 			analytics,
 		)
 		if err != nil {
-			fmt.Printf("Warning: failed to update analytics for form %s: %v\n", formID, err)
+			log.Printf("WARN: Failed to update analytics for form %s: %v", formID, err)
 		}
 	}
 	
@@ -202,13 +203,13 @@ func (s *FormService) DeleteForm(ctx context.Context, formID string, ownerID *st
 	// Delete associated responses
 	_, err = s.collections.Responses.DeleteMany(ctx, bson.M{"formId": objectID})
 	if err != nil {
-		fmt.Printf("Warning: failed to delete responses for form %s: %v\n", formID, err)
+		log.Printf("WARN: Failed to delete responses for form %s: %v", formID, err)
 	}
 	
 	// Delete associated analytics
 	_, err = s.collections.Analytics.DeleteOne(ctx, bson.M{"_id": objectID})
 	if err != nil {
-		fmt.Printf("Warning: failed to delete analytics for form %s: %v\n", formID, err)
+		log.Printf("WARN: Failed to delete analytics for form %s: %v", formID, err)
 	}
 	
 	return nil

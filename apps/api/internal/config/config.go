@@ -34,6 +34,12 @@ type WebSocketConfig struct {
 	WriteBufferSize int `mapstructure:"write_buffer_size" validate:"min=1"`
 }
 
+// AuthConfig holds authentication configuration
+type AuthConfig struct {
+	AccessTokenSecret  string `mapstructure:"access_token_secret" validate:"required,min=32"`
+	RefreshTokenSecret string `mapstructure:"refresh_token_secret" validate:"required,min=32"`
+}
+
 // Config holds all application configuration
 type Config struct {
 	Environment string          `mapstructure:"environment" validate:"required,oneof=development staging production"`
@@ -41,6 +47,7 @@ type Config struct {
 	Server      ServerConfig    `mapstructure:"server"`
 	CORS        CORSConfig      `mapstructure:"cors"`
 	WebSocket   WebSocketConfig `mapstructure:"websocket"`
+	Auth        AuthConfig      `mapstructure:"auth"`
 }
 
 // Load loads configuration from environment variables and files
@@ -97,6 +104,10 @@ func setDefaults() {
 	viper.SetDefault("websocket.buffer_size", 256)
 	viper.SetDefault("websocket.read_buffer_size", 1024)
 	viper.SetDefault("websocket.write_buffer_size", 1024)
+
+	// Auth (use strong default secrets for development)
+	viper.SetDefault("auth.access_token_secret", "dune_form_analytics_access_secret_key_32_chars_minimum_dev")
+	viper.SetDefault("auth.refresh_token_secret", "dune_form_analytics_refresh_secret_key_32_chars_minimum_dev")
 }
 
 // GetMongoURIForLogging returns a masked MongoDB URI for logging

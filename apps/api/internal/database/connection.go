@@ -19,6 +19,7 @@ type Database struct {
 
 // Collections holds references to MongoDB collections
 type Collections struct {
+	Users     *mongo.Collection
 	Forms     *mongo.Collection
 	Responses *mongo.Collection
 	Analytics *mongo.Collection
@@ -58,6 +59,7 @@ func Connect(mongoURI string) (*Database, error) {
 // GetCollections returns references to all collections
 func (d *Database) GetCollections() *Collections {
 	return &Collections{
+		Users:     d.DB.Collection("users"),
 		Forms:     d.DB.Collection("forms"),
 		Responses: d.DB.Collection("responses"),
 		Analytics: d.DB.Collection("analytics"),
@@ -96,6 +98,23 @@ func (d *Database) EnsureIndexes() error {
 	
 	collections := d.GetCollections()
 	
+	// Users collection indexes
+	usersIndexes := []mongo.IndexModel{
+		{
+			Keys:    bson.D{{"email", 1}},
+			Options: options.Index().SetUnique(true),
+		},
+		{
+			Keys: bson.D{{"createdAt", 1}},
+		},
+	}
+	
+	_, err := collections.Users.Indexes().CreateMany(ctx, usersIndexes)
+	if err != nil {
+		return fmt.Errorf("failed to create users indexes: %w", err)
+	}
+	log.Println("INFO: Users collection indexes created")
+	
 	// Forms collection indexes
 	formsIndexes := []mongo.IndexModel{
 		{
@@ -113,7 +132,7 @@ func (d *Database) EnsureIndexes() error {
 		},
 	}
 	
-	_, err := collections.Forms.Indexes().CreateMany(ctx, formsIndexes)
+	_, err = collections.Forms.Indexes().CreateMany(ctx, formsIndexes)
 	if err != nil {
 		return fmt.Errorf("failed to create forms indexes: %w", err)
 	}

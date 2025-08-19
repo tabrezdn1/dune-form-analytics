@@ -6,6 +6,7 @@ import (
 
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/database"
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/models"
+	"github.com/tabrezdn1/dune-form-analytics/api/internal/services"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -48,10 +49,24 @@ type WebSocketManagerInterface interface {
 	Run()
 }
 
+// AuthServiceInterface defines the contract for authentication operations
+type AuthServiceInterface interface {
+	CreateUser(ctx context.Context, req *models.CreateUserRequest) (*models.User, error)
+	LoginUser(ctx context.Context, req *models.LoginRequest) (*models.AuthResponse, error)
+	RefreshTokens(ctx context.Context, refreshToken string) (*models.AuthResponse, error)
+	ValidateAccessToken(tokenString string) (*services.Claims, error)
+	ValidateRefreshToken(tokenString string) (*services.Claims, error)
+	GenerateTokens(user *models.User) (string, string, error)
+	GetUserByID(ctx context.Context, userID string) (*models.User, error)
+	HashPassword(password string) (string, error)
+	VerifyPassword(hashedPassword, password string) error
+}
+
 // DatabaseInterface defines the contract for database operations
 type DatabaseInterface interface {
 	GetCollections() *database.Collections
 	HealthCheck() error
 	EnsureIndexes() error
 	Close() error
+	RunMigrations() error
 }

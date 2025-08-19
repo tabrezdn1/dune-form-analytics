@@ -2,7 +2,6 @@ package realtime
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"sync"
 
