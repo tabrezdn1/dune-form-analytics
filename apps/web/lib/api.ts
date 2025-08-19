@@ -46,11 +46,10 @@ class ApiClient {
       if (!response.ok) {
         // Handle 401 errors (token expired)
         if (response.status === 401 && typeof window !== 'undefined') {
-          // Clear invalid tokens
+          // Clear invalid tokens and redirect to login immediately
           localStorage.removeItem('authToken')
           localStorage.removeItem('refreshToken')
-          // Redirect to login
-          window.location.href = '/login'
+          window.location.replace('/login')
           throw new Error('Authentication required')
         }
         

@@ -290,6 +290,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('authToken')
       localStorage.removeItem('refreshToken')
     }, []),
+
+
     
     refreshToken: useCallback(async () => {
       const refreshToken = localStorage.getItem('refreshToken')
@@ -387,6 +389,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       })
     }
   }, [])
+
+
 
   const contextValue: AppContextValue = {
     state,

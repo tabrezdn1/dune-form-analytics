@@ -66,8 +66,10 @@ export default function DashboardPage() {
               </div>
             </Link>
 
-            <Link
+            <a
               href="/f/product-feedback-survey"
+              target="_blank"
+              rel="noopener noreferrer"
               className="group bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600 transition-colors"
             >
               <div className="flex items-center mb-4">
@@ -77,15 +79,18 @@ export default function DashboardPage() {
                   </svg>
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 group-hover:text-purple-600 dark:group-hover:text-purple-400">
-                    Try Demo
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 flex items-center">
+                    View Sample Form
+                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Test the sample feedback form
+                    Test the sample feedback form in new tab
                   </p>
                 </div>
               </div>
-            </Link>
+            </a>
           </div>
 
           {/* Recent Activity or Stats could go here */}
