@@ -98,6 +98,15 @@ export interface Analytics {
   updatedAt: string
 }
 
+// WebSocket Analytics Update Type
+export interface AnalyticsUpdate {
+  byField?: Record<string, FieldAnalytics>
+  totalResponses?: number
+  completionRate?: number
+  averageTimeToComplete?: number
+  updatedAt?: string
+}
+
 // WebSocket Types
 export interface WebSocketMessage {
   type: string

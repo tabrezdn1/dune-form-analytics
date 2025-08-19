@@ -111,7 +111,13 @@ class ApiClient {
 
   // Public form endpoints
   async getPublicForm(slug: string): Promise<ApiResponse<PublicForm>> {
-    return this.request(`/api/forms/slug/${slug}`)
+    // Force fresh data for public forms (no caching)
+    return this.request(`/api/forms/slug/${slug}`, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
+      }
+    })
   }
 
   // Response endpoints

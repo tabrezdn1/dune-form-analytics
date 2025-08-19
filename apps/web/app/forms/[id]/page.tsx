@@ -6,18 +6,19 @@ import React, { useState, useEffect, useRef } from 'react'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 import { notFound } from 'next/navigation'
-import { api } from '@/lib/api'
+import { FormAnalytics } from './FormAnalytics'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { Breadcrumbs } from '@/components/navigation/Breadcrumbs'
 import { Loading } from '@/components/ui/Loading'
 import { useAppContext } from '@/lib/contexts/AppContext'
+import { api } from '@/lib/api'
 import { Form } from '@/lib/types'
-import FormBuilderClient from './FormBuilderClient'
 
-interface BuilderPageProps {
+interface DashboardPageProps {
   params: { id: string }
 }
 
-export default function EditFormPage({ params }: BuilderPageProps) {
+export default function DashboardPage({ params }: DashboardPageProps) {
   const [form, setForm] = useState<Form | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -55,7 +56,7 @@ export default function EditFormPage({ params }: BuilderPageProps) {
     return (
       <ProtectedRoute>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-          <Loading size="lg" text="Loading form builder..." />
+          <Loading size="lg" text="Loading analytics dashboard..." />
         </div>
       </ProtectedRoute>
     )
@@ -67,7 +68,26 @@ export default function EditFormPage({ params }: BuilderPageProps) {
 
   return (
     <ProtectedRoute>
-      <FormBuilderClient initialForm={form} />
+      <div className="bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Breadcrumbs items={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'My Forms', href: '/forms' },
+            { label: `${form.title} - Analytics`, current: true }
+          ]} />
+          
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+              {form.title} - Analytics
+            </h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              Real-time analytics for your form responses
+            </p>
+          </div>
+          
+          <FormAnalytics form={form} />
+        </div>
+      </div>
     </ProtectedRoute>
   )
 }

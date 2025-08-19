@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { Form, Analytics, FieldAnalytics } from '@/lib/types'
+import { Form, Analytics, FieldAnalytics, AnalyticsUpdate } from '@/lib/types'
 import { useFormAnalyticsWebSocket } from '@/lib/websocket'
 import { AnalyticsCard } from '@/components/charts/AnalyticsCard'
 import { api, formUtils } from '@/lib/api'
@@ -18,44 +18,38 @@ export function FormAnalytics({ form, initialAnalytics }: FormAnalyticsProps) {
   const [isLoading, setIsLoading] = useState(!initialAnalytics)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
   const [isConnected, setIsConnected] = useState(false)
+  const hasLoadedRef = useRef(false)
 
   // Handle real-time analytics updates
-  const handleAnalyticsUpdate = (data: any) => {
-    console.log('🔄 handleAnalyticsUpdate called with:', JSON.stringify(data, null, 2))
-    
+  const handleAnalyticsUpdate = (data: AnalyticsUpdate) => {
     setAnalytics(prev => {
-      console.log('🔄 Previous analytics state:', prev?.totalResponses || 'null')
-      
       if (!prev) {
-        console.log('❌ No previous analytics state, cannot update')
         return null
       }
       
-      // Handle complete analytics data or just field updates
-      if (data.totalResponses !== undefined) {
+      // Handle complete analytics data
+      if (data.totalResponses !== undefined && data.byField) {
         // Complete analytics update
-        const newAnalytics = {
+        return {
           ...prev,
           byField: { ...prev.byField, ...data.byField },
           totalResponses: data.totalResponses,
           updatedAt: data.updatedAt || new Date().toISOString(),
         }
-        console.log('✅ New analytics state:', newAnalytics.totalResponses)
-        return newAnalytics
-      } else {
-        // Field-only update (legacy)
-        const newAnalytics = {
+      } else if (data.byField) {
+        // Field-only update
+        return {
           ...prev,
-          byField: { ...prev.byField, ...data },
+          byField: { ...prev.byField, ...data.byField },
           updatedAt: new Date().toISOString(),
         }
-        console.log('✅ Updated analytics (field-only):', newAnalytics.totalResponses)
-        return newAnalytics
+      } else {
+        // No valid update data
+        return prev
       }
     })
     
     setLastUpdated(new Date())
-    console.log('🎉 Analytics state updated - UI should re-render now!')
     toast.success('📊 Real-time update received!', { duration: 2000 })
   }
 
@@ -69,7 +63,8 @@ export function FormAnalytics({ form, initialAnalytics }: FormAnalyticsProps) {
 
   // Load analytics if not provided initially
   useEffect(() => {
-    if (!initialAnalytics) {
+    if (!initialAnalytics && !hasLoadedRef.current) {
+      hasLoadedRef.current = true
       loadAnalytics()
     }
   }, [])
@@ -78,7 +73,7 @@ export function FormAnalytics({ form, initialAnalytics }: FormAnalyticsProps) {
     try {
       setIsLoading(true)
       const response = await api.getAnalytics(form.id)
-      setAnalytics(response.data)
+      setAnalytics(response.data || null)
     } catch (error) {
       toast.error('Failed to load analytics')
     } finally {

@@ -1,6 +1,10 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+
+// Disable static generation and caching for this protected route
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { useFormBuilder } from '@/lib/form-builder-state'
 import { FieldPalette } from '@/components/builder/FieldPalette'
 import { FormCanvas } from '@/components/builder/FormCanvas'
@@ -14,6 +18,7 @@ import toast from 'react-hot-toast'
 export default function FormBuilderPage() {
   const [activeTab, setActiveTab] = useState<'build' | 'preview'>('build')
   const [showPreview, setShowPreview] = useState(false)
+
 
   const {
     title,
@@ -83,7 +88,7 @@ export default function FormBuilderPage() {
       
       // Redirect to analytics dashboard
       if (publish) {
-        window.location.href = `/dashboard/forms/${form.id}`
+        window.location.href = `/forms/${form.id}`
       }
       
     } catch (error) {

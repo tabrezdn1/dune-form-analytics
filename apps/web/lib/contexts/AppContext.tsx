@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useReducer, ReactNode, useCallback, useEffect } from 'react'
+import React, { createContext, useContext, useReducer, ReactNode, useCallback, useEffect, useRef } from 'react'
 
 // User Type
 interface User {
@@ -191,6 +191,7 @@ export function useAppContext() {
 // App Provider Component
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState)
+  const hasInitializedRef = useRef(false)
 
   // Actions
   const actions = {
@@ -355,6 +356,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Initialize auth state from localStorage on mount
   useEffect(() => {
+    // Prevent duplicate calls in React Strict Mode
+    if (hasInitializedRef.current) return
+    hasInitializedRef.current = true
+
+    // Skip auth checks on public form pages
+    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/f/')) {
+      return
+    }
+    
     const token = localStorage.getItem('authToken')
     const refreshToken = localStorage.getItem('refreshToken')
     

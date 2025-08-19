@@ -106,7 +106,7 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
       
       // Redirect to analytics dashboard if published
       if (publish) {
-        window.location.href = `/dashboard/forms/${form.id}`
+        window.location.href = `/forms/${form.id}`
       }
       
     } catch (error) {

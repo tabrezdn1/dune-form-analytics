@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { WebSocketMessage, Analytics } from './types'
+import { WebSocketMessage, AnalyticsUpdate } from './types'
 
 interface UseWebSocketOptions {
   onMessage?: (data: any) => void
@@ -158,7 +158,7 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
 }
 
 // Hook for form analytics WebSocket connection
-export function useFormAnalyticsWebSocket(formId: string, onAnalyticsUpdate?: (analytics: Analytics['byField']) => void) {
+export function useFormAnalyticsWebSocket(formId: string, onAnalyticsUpdate?: (analytics: AnalyticsUpdate) => void) {
   const getWebSocketUrl = () => {
     return process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080'
   }

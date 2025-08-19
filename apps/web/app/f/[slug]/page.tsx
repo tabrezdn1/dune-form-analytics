@@ -3,6 +3,10 @@ import { notFound } from 'next/navigation'
 import { PublicFormView } from './PublicFormView'
 import { api } from '@/lib/api'
 
+// Disable static generation and caching for this dynamic route
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 interface PublicFormPageProps {
   params: { slug: string }
 }
