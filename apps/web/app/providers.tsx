@@ -7,13 +7,35 @@ import { AppProvider } from '@/lib/contexts/AppContext'
 // Theme Provider Component
 function ThemeProvider({ children }: { children: ReactNode }) {
   React.useEffect(() => {
-    // Apply theme class to document root
-    const theme = localStorage.getItem('theme') || 'system'
-    
-    if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
+    const updateTheme = () => {
+      const theme = localStorage.getItem('theme') || 'system'
+      
+      if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    }
+
+    // Initial theme application
+    updateTheme()
+
+    // Listen for system theme changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    mediaQuery.addEventListener('change', updateTheme)
+
+    // Listen for storage changes (theme updates from other tabs)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'theme') {
+        updateTheme()
+      }
+    }
+    window.addEventListener('storage', handleStorageChange)
+
+    // Cleanup
+    return () => {
+      mediaQuery.removeEventListener('change', updateTheme)
+      window.removeEventListener('storage', handleStorageChange)
     }
   }, [])
 

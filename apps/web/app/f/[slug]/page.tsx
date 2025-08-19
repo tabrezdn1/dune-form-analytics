@@ -19,12 +19,12 @@ export async function generateMetadata({ params }: PublicFormPageProps): Promise
 
     if (!form) {
       return {
-        title: 'Form Not Found - Dune Form Analytics',
+        title: 'Form Not Found - Dune Forms',
       }
     }
 
     return {
-      title: `${form.title} - Dune Form Analytics`,
+      title: `${form.title} - Dune Forms`,
       description: form.description || `Fill out the ${form.title} form`,
       openGraph: {
         title: form.title,
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: PublicFormPageProps): Promise
     }
   } catch (error) {
     return {
-      title: 'Form Not Found - Dune Form Analytics',
+      title: 'Form Not Found - Dune Forms',
     }
   }
 }

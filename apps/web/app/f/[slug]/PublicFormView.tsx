@@ -127,7 +127,7 @@ export function PublicFormView({ form }: PublicFormViewProps) {
               href="/"
               className="text-primary-600 hover:text-primary-500 font-medium"
             >
-              Dune Form Analytics
+              Dune Forms
             </a>
           </p>
         </div>

@@ -145,121 +145,197 @@ export default function MyFormsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Breadcrumbs items={[
-          { label: 'Dashboard', href: '/dashboard' },
-          { label: 'My Forms', current: true }
-        ]} />
+      <div className="min-h-screen relative overflow-hidden">
+        {/* Complementary Theme Spotlight Background */}
+        <div className="absolute inset-0 bg-white dark:bg-gray-900"></div>
         
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                My Forms
-              </h1>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
-                Manage your saved forms and drafts
-              </p>
+        {/* Light Theme: Normal Green Spotlight */}
+        <div 
+          className="absolute inset-0 dark:hidden"
+          style={{
+            background: `radial-gradient(ellipse 140% 100% at 50% 50%, 
+              transparent 0%, 
+              transparent 25%, 
+              rgb(34 197 94 / 0.08) 45%,
+              rgb(22 163 74 / 0.15) 65%,
+              rgb(21 128 61 / 0.25) 85%,
+              rgb(20 83 45 / 0.35) 100%)`
+          }}
+        ></div>
+        
+        {/* Dark Theme: Deep Emerald Spotlight */}
+        <div 
+          className="absolute inset-0 hidden dark:block"
+          style={{
+            background: `radial-gradient(ellipse 140% 100% at 50% 50%, 
+              transparent 0%, 
+              transparent 20%, 
+              rgb(6 78 59 / 0.15) 40%,
+              rgb(6 78 59 / 0.3) 60%,
+              rgb(4 47 46 / 0.5) 80%,
+              rgb(6 78 59 / 0.7) 100%)`
+          }}
+        ></div>
+        
+        {/* Light Theme: Corner Effects */}
+        <div 
+          className="absolute inset-0 opacity-60 dark:hidden"
+          style={{
+            background: `
+              radial-gradient(circle at 0% 0%, rgb(21 128 61 / 0.2) 0%, transparent 50%),
+              radial-gradient(circle at 100% 0%, rgb(34 197 94 / 0.15) 0%, transparent 50%),
+              radial-gradient(circle at 0% 100%, rgb(22 163 74 / 0.15) 0%, transparent 50%),
+              radial-gradient(circle at 100% 100%, rgb(21 128 61 / 0.2) 0%, transparent 50%)`
+          }}
+        ></div>
+        
+        {/* Dark Theme: Deep Emerald Corners */}
+        <div 
+          className="absolute inset-0 opacity-80 hidden dark:block"
+          style={{
+            background: `
+              radial-gradient(circle at 0% 0%, rgb(6 78 59 / 0.4) 0%, transparent 50%),
+              radial-gradient(circle at 100% 0%, rgb(4 47 46 / 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 0% 100%, rgb(6 78 59 / 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 100% 100%, rgb(4 47 46 / 0.5) 0%, transparent 50%)`
+          }}
+        ></div>
+        
+        {/* Content */}
+        <div className="relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Breadcrumbs items={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'My Forms', current: true }
+          ]} />
+          
+          {/* Modern Header */}
+          <div className="mb-8">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                      My Forms
+                    </h1>
+                    <p className="mt-1 text-gray-600 dark:text-gray-400">
+                      Manage your saved forms and drafts
+                    </p>
+                  </div>
+                </div>
+                
+                <Link
+                  href="/builder"
+                  className="inline-flex items-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-xl hover:from-emerald-700 hover:to-teal-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>Create New Form</span>
+                </Link>
+              </div>
             </div>
-            
-            <Link
-              href="/builder"
-              className="btn-primary inline-flex items-center"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Create New Form
-            </Link>
           </div>
-        </div>
 
-        {/* Forms List */}
-        {forms.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-gray-400 mb-4">
-              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+          {/* Modern Forms List */}
+          {forms.length === 0 ? (
+            <div className="bg-white/80 backdrop-blur-sm dark:bg-gray-800/90 dark:backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-200/50 dark:border-emerald-700/30 p-12">
+              <div className="text-center">
+                <div className="text-gray-400 dark:text-gray-500 mb-6">
+                  <svg className="w-20 h-20 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+                  No Forms Yet
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto text-lg">
+                  Create your first form to start collecting responses and analyzing data.
+                </p>
+                <Link
+                  href="/builder"
+                  className="inline-flex items-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 py-4 rounded-xl hover:from-emerald-700 hover:to-teal-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold text-lg"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>Create Your First Form</span>
+                </Link>
+              </div>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-              No Forms Yet
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">
-              Create your first form to get started with collecting responses.
-            </p>
-            <Link
-              href="/builder"
-              className="btn-primary inline-flex items-center"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Create Your First Form
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-6">
+          ) : (
+          <div className="grid gap-6">
             {forms.map((form) => (
-              <div key={form.id} className="card p-6">
+              <div key={form.id} className="bg-white/80 backdrop-blur-sm dark:bg-gray-800/90 dark:backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-200/50 dark:border-emerald-700/30 hover:border-emerald-300 dark:hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-500/20 dark:hover:shadow-emerald-500/10 p-8 transition-all duration-300 hover:bg-white/95 dark:hover:bg-gray-800/95">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    <div className="flex items-center space-x-4 mb-4">
+                      <div className={`w-3 h-3 rounded-full ${
+                        form.status === 'published' 
+                          ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30' 
+                          : 'bg-yellow-500 shadow-lg shadow-yellow-500/30'
+                      }`}></div>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                         {form.title}
                       </h3>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      <span className={`px-3 py-1.5 rounded-xl text-sm font-semibold ${
                         form.status === 'published' 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                          ? 'bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 dark:from-emerald-900/30 dark:to-teal-900/30 dark:text-emerald-200'
+                          : 'bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 dark:from-yellow-900/30 dark:to-orange-900/30 dark:text-yellow-200'
                       }`}>
-                        {formUtils.formatStatus(form.status)}
+                        {form.status === 'published' ? 'Live' : 'Draft'}
                       </span>
                     </div>
                     
                     {form.description && (
-                      <p className="text-gray-600 dark:text-gray-400 mb-3">
+                      <p className="text-gray-700 dark:text-gray-300 mb-4 text-lg leading-relaxed">
                         {form.description}
                       </p>
                     )}
                     
-                    <div className="flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
-                      <div className="flex items-center space-x-1">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex items-center space-x-8 text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-700/50 px-3 py-1.5 rounded-lg">
+                        <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <span>{form.fields.length} fields</span>
+                        <span className="font-medium">{form.fields.length} fields</span>
                       </div>
                       
-                      <div className="flex items-center space-x-1">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-700/50 px-3 py-1.5 rounded-lg">
+                        <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span>Created {new Date(form.createdAt).toLocaleDateString()}</span>
+                        <span className="font-medium">Created {new Date(form.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end space-y-3">
-                    {/* Row 1: Status Toggle */}
-                    <div className="flex justify-end">
+                  <div className="flex flex-col items-end space-y-4">
+                    {/* Modern Status Toggle */}
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {form.status === 'published' ? 'Published' : 'Draft'}
+                      </span>
                       <ToggleSwitch
                         enabled={form.status === 'published'}
                         onChange={() => handleStatusToggle(form)}
-                        onLabel="Published"
-                        offLabel="Draft"
+                        onLabel=""
+                        offLabel=""
                       />
                     </div>
 
-                    {/* Row 2: Action Icons */}
+                    {/* Modern Action Buttons */}
                     <div className="flex items-center space-x-2">
                       {/* Share Button - Only for published forms */}
                       {form.status === 'published' && (
                         <button
                           onClick={() => handleShare(form)}
-                          className="p-2 text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                          className="p-2.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-xl transition-all duration-200 hover:scale-105"
                           title="Copy share link"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -274,7 +350,7 @@ export default function MyFormsPage() {
                           href={formUtils.getFormShareURL(form.shareSlug)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
+                          className="p-2.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-xl transition-all duration-200 hover:scale-105"
                           title="Open form in new tab"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -287,7 +363,7 @@ export default function MyFormsPage() {
                       {form.status === 'published' && (
                         <Link
                           href={`/forms/${form.id}`}
-                          className="p-2 text-gray-600 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400 transition-colors"
+                          className="p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-xl transition-all duration-200 hover:scale-105"
                           title="View analytics"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -299,7 +375,7 @@ export default function MyFormsPage() {
                       {/* Edit Button */}
                       <Link
                         href={`/builder/${form.id}`}
-                        className="p-2 text-gray-600 hover:text-purple-600 dark:text-gray-400 dark:hover:text-purple-400 transition-colors"
+                        className="p-2.5 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-xl transition-all duration-200 hover:scale-105"
                         title="Edit form"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -310,7 +386,7 @@ export default function MyFormsPage() {
                       {/* Delete Button */}
                       <button
                         onClick={() => openDeleteModal(form)}
-                        className="p-2 text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                        className="p-2.5 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 rounded-xl transition-all duration-200 hover:scale-105"
                         title="Delete form"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -324,7 +400,8 @@ export default function MyFormsPage() {
             ))}
           </div>
                 )}
-      </div>
+        </div>
+        </div>
       </div>
 
       {/* Delete Confirmation Modal */}

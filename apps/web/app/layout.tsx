@@ -7,10 +7,10 @@ import { Header } from '@/components/navigation/Header'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Dune Form Analytics',
+  title: 'Dune Forms',
   description: 'Create dynamic forms and analyze responses in real-time',
   keywords: ['forms', 'analytics', 'surveys', 'real-time', 'dashboard'],
-  authors: [{ name: 'Dune Analytics Team' }],
+  authors: [{ name: 'Dune Forms Team' }],
   viewport: 'width=device-width, initial-scale=1',
 }
 

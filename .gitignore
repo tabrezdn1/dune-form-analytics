@@ -83,3 +83,7 @@ data/
 # Backup files
 *.bak
 *.backup
+
+# TypeScript cache
+*.tsbuildinfo
+tsconfig.tsbuildinfo

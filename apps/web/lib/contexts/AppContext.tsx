@@ -354,11 +354,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }, []),
   }
 
-  // Initialize auth state from localStorage on mount
+  // Initialize app state from localStorage on mount
   useEffect(() => {
     // Prevent duplicate calls in React Strict Mode
     if (hasInitializedRef.current) return
     hasInitializedRef.current = true
+
+    // Initialize theme from localStorage
+    const savedTheme = localStorage.getItem('theme') as AppState['theme']
+    if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
+      dispatch({ type: 'SET_THEME', payload: savedTheme })
+    }
 
     // Skip auth checks on public form pages
     if (typeof window !== 'undefined' && window.location.pathname.startsWith('/f/')) {
