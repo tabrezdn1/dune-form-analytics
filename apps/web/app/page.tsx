@@ -100,8 +100,8 @@ export default function HomePage() {
               Dune Forms
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-8">
-              Create dynamic forms and analyze responses in real-time with
-              powerful analytics dashboard
+              Create, edit, and share professional forms with real-time analytics,
+              trend insights, and intelligent data protection
             </p>
 
             {/* CTA Buttons */}
@@ -360,7 +360,7 @@ export default function HomePage() {
                   </svg>
                   <span className="text-gray-700 dark:text-gray-300">
                     <strong>Real-Time Updates</strong> - WebSocket-powered live
-                    analytics without page refresh
+                    analytics
                   </span>
                 </li>
                 <li className="flex items-start">
@@ -393,8 +393,7 @@ export default function HomePage() {
                     />
                   </svg>
                   <span className="text-gray-700 dark:text-gray-300">
-                    <strong>Export Capabilities</strong> - Download responses as
-                    CSV files
+                    <strong>Export Capabilities</strong> - Download responses and analytics data as CSV and PDF files
                   </span>
                 </li>
                 <li className="flex items-start">
@@ -427,8 +426,10 @@ export default function HomePage() {
               Experience the form builder in action with our sample feedback
               form
             </p>
-            <Link
+            <a
               href="/f/product-feedback-survey"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center justify-center px-6 py-3 border border-emerald-600 text-base font-medium rounded-md text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
             >
               <svg
@@ -445,7 +446,20 @@ export default function HomePage() {
                 />
               </svg>
               Try Sample Form
-            </Link>
+              <svg
+                className="w-4 h-4 ml-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+            </a>
           </div>
 
           {/* Technical Stack */}

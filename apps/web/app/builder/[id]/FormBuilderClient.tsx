@@ -542,67 +542,82 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
             </div>
           </div>
         ) : (
-          /* Modern Preview Tab */
-          <div className="max-w-3xl mx-auto">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          /* Modern Preview Tab - Matches Public Form Styling */
+          <div className="max-w-4xl mx-auto relative">
+            {/* Professional neutral background overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 rounded-2xl"></div>
+            
+            {/* Subtle texture overlay */}
+            <div 
+              className="absolute inset-0 opacity-30 dark:opacity-20 rounded-2xl"
+              style={{
+                backgroundImage: `radial-gradient(circle at 25% 25%, rgba(99, 102, 241, 0.05) 0%, transparent 50%), 
+                                 radial-gradient(circle at 75% 75%, rgba(168, 85, 247, 0.05) 0%, transparent 50%)`
+              }}
+            ></div>
+            
+            <div className="relative z-10 p-6 sm:p-8">
               {/* Preview Header */}
-              <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-6">
-                <div className="flex items-center justify-center space-x-3 text-white mb-4">
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl shadow-lg mb-4">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
-                  <h2 className="text-2xl font-bold">Live Preview</h2>
                 </div>
-                <p className="text-emerald-100 text-center">See how your form will look to users</p>
+                
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                  Live Preview
+                </h2>
+                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6">
+                  See exactly how your form will appear to users
+                </p>
               </div>
               
               {/* Form Preview Content */}
-              <div className="p-8">
-                <div className="mb-8 text-center">
-                  <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">
-                    {title || 'Untitled Form'}
-                  </h3>
-                  {description && (
-                    <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                      {description}
-                    </p>
-                  )}
-                </div>
-
-                {fields.length > 0 ? (
-                  <div className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                    <FormRenderer
-                      fields={fields}
-                      onSubmit={handlePreviewSubmit}
-                      showProgress={true}
-                    />
-                  </div>
-                ) : (
-                  <div className="text-center py-16">
-                    <div className="text-gray-400 dark:text-gray-500 mb-4">
-                      <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-                    <h4 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                      No Fields Yet
-                    </h4>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6">
-                      Switch to the Build tab and add some fields to see the preview
-                    </p>
-                    <button
-                      onClick={() => setActiveTab('build')}
-                      className="inline-flex items-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all duration-200 font-semibold"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                      </svg>
-                      <span>Start Building</span>
-                    </button>
-                  </div>
+              <div className="mb-6 text-center">
+                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 text-balance">
+                  {title || 'Untitled Form'}
+                </h3>
+                {description && (
+                  <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed text-balance">
+                    {description}
+                  </p>
                 )}
               </div>
+
+              {fields.length > 0 ? (
+                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-6 sm:p-8">
+                  <FormRenderer
+                    fields={fields}
+                    onSubmit={handlePreviewSubmit}
+                    showProgress={true}
+                  />
+                </div>
+              ) : (
+                <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-8 text-center">
+                  <div className="text-gray-400 dark:text-gray-500 mb-6">
+                    <svg className="w-20 h-20 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h4 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                    No Fields Yet
+                  </h4>
+                  <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
+                    Switch to the Build tab and add some fields to see the preview
+                  </p>
+                  <button
+                    onClick={() => setActiveTab('build')}
+                    className="inline-flex items-center space-x-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 py-4 rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                    <span>Start Building</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -627,69 +642,83 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
           </button>
         </div>
 
-        {/* Modern Mobile preview overlay */}
+        {/* Enhanced Mobile preview overlay */}
         {showPreview && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 lg:hidden">
-            <div className="absolute inset-4 bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-2xl">
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 lg:hidden">
+            <div className="absolute inset-2 bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-2xl">
+              {/* Header */}
               <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-4 flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   </div>
-                  <h3 className="font-bold text-white text-lg">Form Preview</h3>
+                  <div>
+                    <h3 className="font-bold text-white text-lg">Form Preview</h3>
+                    <p className="text-emerald-100 text-sm">Live preview mode</p>
+                  </div>
                 </div>
                 <button
                   onClick={() => setShowPreview(false)}
-                  className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition-colors"
+                  className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors"
                 >
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-              <div className="h-[calc(100%-80px)] overflow-auto p-6">
-                {fields.length > 0 ? (
-                  <div>
-                    <div className="mb-6 text-center">
-                      <h4 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                        {title || 'Untitled Form'}
+              
+              {/* Content */}
+              <div className="h-[calc(100%-88px)] overflow-auto relative">
+                {/* Background gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"></div>
+                
+                <div className="relative z-10 p-4">
+                  {fields.length > 0 ? (
+                    <div>
+                      <div className="mb-6 text-center">
+                        <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                          {title || 'Untitled Form'}
+                        </h4>
+                        {description && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                            {description}
+                          </p>
+                        )}
+                      </div>
+                      
+                      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-4">
+                        <FormRenderer
+                          fields={fields}
+                          onSubmit={handlePreviewSubmit}
+                          showProgress={true}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-16">
+                      <div className="text-gray-400 dark:text-gray-500 mb-6">
+                        <svg className="w-20 h-20 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+                        No Fields Yet
                       </h4>
-                      {description && (
-                        <p className="text-gray-600 dark:text-gray-400">
-                          {description}
-                        </p>
-                      )}
+                      <p className="text-gray-600 dark:text-gray-400 mb-8 px-4">
+                        Add some fields to see the preview
+                      </p>
+                      <button
+                        onClick={() => setShowPreview(false)}
+                        className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform transition-all duration-200 hover:-translate-y-0.5"
+                      >
+                        Start Building
+                      </button>
                     </div>
-                    <FormRenderer
-                      fields={fields}
-                      onSubmit={handlePreviewSubmit}
-                      showProgress={true}
-                    />
-                  </div>
-                ) : (
-                  <div className="text-center py-16">
-                    <div className="text-gray-400 dark:text-gray-500 mb-4">
-                      <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-                    <h4 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                      No Fields Yet
-                    </h4>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6">
-                      Add some fields to see the preview
-                    </p>
-                    <button
-                      onClick={() => setShowPreview(false)}
-                      className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-xl font-semibold"
-                    >
-                      Start Building
-                    </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>

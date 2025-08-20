@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { PublicFormView } from './PublicFormView'
+import { ThemeScript } from '@/components/ui/ThemeScript'
 import { api } from '@/lib/api'
 
 // Disable static generation and caching for this dynamic route
@@ -52,7 +53,12 @@ export default async function PublicFormPage({ params }: PublicFormPageProps) {
       notFound()
     }
 
-    return <PublicFormView form={form} />
+    return (
+      <>
+        <ThemeScript />
+        <PublicFormView form={form} />
+      </>
+    )
   } catch (error) {
     notFound()
   }
