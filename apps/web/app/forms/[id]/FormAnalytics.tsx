@@ -19,36 +19,48 @@ export function FormAnalytics({ form, initialAnalytics }: FormAnalyticsProps) {
   );
   const [isLoading, setIsLoading] = useState(!initialAnalytics);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [isConnected, setIsConnected] = useState(false);
   const hasLoadedRef = useRef(false);
 
   // Handle real-time analytics updates
   const handleAnalyticsUpdate = (data: AnalyticsUpdate) => {
+    console.log("📊 Real-time analytics update received:", data);
+    
     setAnalytics((prev) => {
       if (!prev) {
+        console.warn("⚠️ Received analytics update but no previous analytics data exists");
         return null;
       }
 
-      // Handle complete analytics data
-      if (data.totalResponses !== undefined && data.byField) {
-        // Complete analytics update
-        return {
-          ...prev,
-          byField: { ...prev.byField, ...data.byField },
-          totalResponses: data.totalResponses,
-          updatedAt: data.updatedAt || new Date().toISOString(),
+      // Create new analytics object with deep merge
+      const updatedAnalytics = {
+        ...prev,
+        updatedAt: data.updatedAt || new Date().toISOString(),
+      };
+
+      // Handle byField updates with proper merging
+      if (data.byField) {
+        updatedAnalytics.byField = {
+          ...prev.byField,
+          ...Object.fromEntries(
+            Object.entries(data.byField).map(([fieldId, fieldData]) => [
+              fieldId,
+              {
+                ...(prev.byField[fieldId] || {}),
+                ...fieldData,
+              }
+            ])
+          )
         };
-      } else if (data.byField) {
-        // Field-only update
-        return {
-          ...prev,
-          byField: { ...prev.byField, ...data.byField },
-          updatedAt: new Date().toISOString(),
-        };
-      } else {
-        // No valid update data
-        return prev;
+        console.log("🔄 Updated field analytics:", Object.keys(data.byField));
       }
+
+      // Handle totalResponses update
+      if (data.totalResponses !== undefined) {
+        updatedAnalytics.totalResponses = data.totalResponses;
+        console.log("📈 Updated total responses:", data.totalResponses);
+      }
+
+      return updatedAnalytics;
     });
 
     setLastUpdated(new Date());
@@ -56,13 +68,20 @@ export function FormAnalytics({ form, initialAnalytics }: FormAnalyticsProps) {
   };
 
   // WebSocket connection for real-time updates
-  const { isConnected: wsConnected, connectionStatus } =
+  const { connectionStatus } =
     useFormAnalyticsWebSocket(form.id, handleAnalyticsUpdate);
 
-  // Update connection status
+  // Provide user feedback for connection status changes
   React.useEffect(() => {
-    setIsConnected(wsConnected);
-  }, [wsConnected]);
+    if (connectionStatus === 'connected') {
+      console.log("🟢 WebSocket connected successfully for real-time updates");
+    } else if (connectionStatus === 'error') {
+      console.error("🔴 WebSocket connection failed - real-time updates unavailable");
+      toast.error("Real-time connection failed", { duration: 3000 });
+    } else if (connectionStatus === 'disconnected') {
+      console.warn("🟡 WebSocket disconnected - attempting to reconnect");
+    }
+  }, [connectionStatus]);
 
   // Load analytics if not provided initially
   useEffect(() => {
@@ -133,21 +152,27 @@ export function FormAnalytics({ form, initialAnalytics }: FormAnalyticsProps) {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center space-x-4">
-              {/* Connection Status */}
-              <div
-                className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl ${
-                  isConnected
-                    ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300"
-                    : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300"
-                }`}
-              >
-                <div
-                  className={`w-2 h-2 rounded-full ${
-                    isConnected ? "bg-emerald-500 animate-pulse" : "bg-red-500"
-                  }`}
-                />
-                <span className="text-sm font-medium">
-                  {isConnected ? "Live Updates" : "Offline"}
+              {/* Real-time Connection Status */}
+              <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl ${
+                connectionStatus === 'connected' ? 'bg-emerald-50 dark:bg-emerald-900/20' :
+                connectionStatus === 'connecting' ? 'bg-yellow-50 dark:bg-yellow-900/20' :
+                connectionStatus === 'error' ? 'bg-red-50 dark:bg-red-900/20' : 
+                'bg-gray-50 dark:bg-gray-900/20'
+              }`}>
+                <div className={`w-2 h-2 rounded-full ${
+                  connectionStatus === 'connected' ? 'bg-emerald-500' :
+                  connectionStatus === 'connecting' ? 'bg-yellow-500 animate-pulse' :
+                  connectionStatus === 'error' ? 'bg-red-500' : 'bg-gray-400'
+                }`} />
+                <span className={`text-sm font-medium ${
+                  connectionStatus === 'connected' ? 'text-emerald-700 dark:text-emerald-300' :
+                  connectionStatus === 'connecting' ? 'text-yellow-700 dark:text-yellow-300' :
+                  connectionStatus === 'error' ? 'text-red-700 dark:text-red-300' :
+                  'text-gray-600 dark:text-gray-400'
+                }`}>
+                  {connectionStatus === 'connected' ? 'Live Updates' :
+                   connectionStatus === 'connecting' ? 'Connecting...' :
+                   connectionStatus === 'error' ? 'Connection Failed' : 'Offline'}
                 </span>
               </div>
 
@@ -428,20 +453,25 @@ export function FormAnalytics({ form, initialAnalytics }: FormAnalyticsProps) {
 
               {/* Most Skipped Questions */}
               {(() => {
-                const requiredFields = form.fields.filter((f) => f.required);
+                // Look at ALL fields to find the most skipped one
+                const allFields = form.fields;
                 const totalResponses = analytics.totalResponses;
 
                 let mostSkipped = { field: "N/A", skipped: 0, rate: 0 };
-                requiredFields.forEach((field) => {
+                
+                // Find the field with the highest skip rate (lowest response rate)
+                allFields.forEach((field) => {
                   const fieldAnalytics = analytics.byField[field.id];
                   if (fieldAnalytics && totalResponses > 0) {
                     const skipped = totalResponses - fieldAnalytics.count;
-                    const rate = (skipped / totalResponses) * 100;
-                    if (skipped > mostSkipped.skipped) {
+                    const skipRate = (skipped / totalResponses) * 100;
+                    
+                    // Find the field with the highest skip rate
+                    if (skipRate > mostSkipped.rate) {
                       mostSkipped = {
                         field: field.label,
                         skipped: skipped,
-                        rate: rate,
+                        rate: skipRate,
                       };
                     }
                   }

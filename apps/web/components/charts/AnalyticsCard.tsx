@@ -90,7 +90,11 @@ export function AnalyticsCard({
                   <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full transition-all duration-1000"
-                      style={{ width: analytics.count > 0 ? "100%" : "0%" }}
+                      style={{ 
+                        width: totalFormResponses > 0 
+                          ? `${Math.round((analytics.count / totalFormResponses) * 100)}%` 
+                          : "0%" 
+                      }}
                     />
                   </div>
                   <div className="flex justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
@@ -342,7 +346,9 @@ export function AnalyticsCard({
                 Response Rate
               </p>
               <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {analytics.count > 0 ? "100%" : "0%"}
+                {totalFormResponses > 0
+                  ? `${Math.round((analytics.count / totalFormResponses) * 100)}%`
+                  : "0%"}
               </p>
             </div>
           </div>
