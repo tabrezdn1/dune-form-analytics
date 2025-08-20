@@ -3,7 +3,9 @@ package realtime
 import (
 	"encoding/json"
 	"log"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
@@ -17,6 +19,11 @@ type Client struct {
 	Conn   *websocket.Conn
 	Send   chan []byte
 	Manager *WebSocketManager
+}
+
+// IsValid checks if the client has valid data
+func (c *Client) IsValid() bool {
+	return len(c.FormID) == 24 && !strings.Contains(c.FormID, "/") && c.ID != ""
 }
 
 // WebSocketManager manages real-time WebSocket connections for form analytics
@@ -58,6 +65,9 @@ func NewWebSocketManager() *WebSocketManager {
 func (w *WebSocketManager) Run() {
 	log.Println("INFO: WebSocket manager started for real-time analytics")
 	
+	// Start periodic cleanup routine
+	go w.periodicCleanup()
+	
 	for {
 		select {
 		case client := <-w.register:
@@ -72,6 +82,26 @@ func (w *WebSocketManager) Run() {
 	}
 }
 
+// periodicCleanup runs every minute to log room status
+func (w *WebSocketManager) periodicCleanup() {
+	ticker := time.NewTicker(60 * time.Second)
+	defer ticker.Stop()
+	
+	for range ticker.C {
+		w.mutex.RLock()
+		
+		log.Printf("INFO: Periodic room status check - %d rooms active", len(w.rooms))
+		for roomKey, clients := range w.rooms {
+			clientCount := len(clients)
+			if clientCount > 0 {
+				log.Printf("INFO: Room '%s' (len:%d) has %d active clients", roomKey, len(roomKey), clientCount)
+			}
+		}
+		
+		w.mutex.RUnlock()
+	}
+}
+
 // HandleConnection handles WebSocket connections for real-time analytics
 func (w *WebSocketManager) HandleConnection(c *fiber.Ctx) error {
 	// Check if it's a WebSocket upgrade request
@@ -81,7 +111,15 @@ func (w *WebSocketManager) HandleConnection(c *fiber.Ctx) error {
 		})
 	}
 
-	formID := c.Params("id")
+	// Extract form ID from URL parameter
+	formIDParam := c.Params("id")
+	
+	// Clean and normalize form ID - remove any spaces, slashes, or special characters
+	formID := strings.TrimSpace(formIDParam)
+	formID = strings.Trim(formID, "/")
+	formID = strings.ReplaceAll(formID, "/", "")
+	formID = strings.ReplaceAll(formID, " ", "")
+	
 	if formID == "" {
 		return c.Status(400).JSON(fiber.Map{
 			"error": "Form ID is required",
@@ -90,6 +128,7 @@ func (w *WebSocketManager) HandleConnection(c *fiber.Ctx) error {
 
 	// Validate form ID format
 	if !utils.IsValidObjectID(formID) {
+		log.Printf("WARN: Invalid ObjectID format for WebSocket connection: '%s'", formID)
 		return c.Status(400).JSON(fiber.Map{
 			"error": "Invalid form ID format",
 		})
@@ -106,13 +145,32 @@ func (w *WebSocketManager) HandleConnection(c *fiber.Ctx) error {
 		// Generate unique client ID
 		clientID := utils.GenerateRandomString(16)
 		
-		// Create client
+		// Validate FormID one more time before creating client
+		if len(formID) != 24 || strings.Contains(formID, "/") {
+			log.Printf("ERROR: Rejecting WebSocket connection - invalid FormID: '%s' (length: %d)", formID, len(formID))
+			conn.WriteMessage(websocket.CloseMessage, []byte("Invalid form ID"))
+			return
+		}
+		
+		// Create a deep copy of formID to ensure it's immutable
+		// Use a fresh string allocation to prevent any possible mutation
+		formIDBytes := []byte(formID)
+		immutableFormID := string(append([]byte{}, formIDBytes...))
+		
+		// Create client with immutable FormID
 		client := &Client{
 			ID:      clientID,
-			FormID:  formID,
+			FormID:  immutableFormID,
 			Conn:    conn,
 			Send:    make(chan []byte, 1024),
 			Manager: w,
+		}
+		
+		// Final validation before registration
+		if !client.IsValid() {
+			log.Printf("ERROR: Client failed final validation before registration - FormID: '%s'", client.FormID)
+			conn.WriteMessage(websocket.CloseMessage, []byte("Client validation failed"))
+			return
 		}
 		
 		// Register client with manager (this starts readPump and writePump)
@@ -142,19 +200,30 @@ func (w *WebSocketManager) UnregisterClient(client *Client) {
 
 // Broadcast sends analytics updates to all connected clients for a form
 func (w *WebSocketManager) Broadcast(formID string, messageType string, data interface{}) {
-	log.Printf("INFO: Attempting to broadcast %s to form %s", messageType, formID)
+	// Normalize form ID to ensure consistency with room keys
+	// Remove any spaces, slashes, or special characters
+	normalizedFormID := strings.TrimSpace(formID)
+	normalizedFormID = strings.Trim(normalizedFormID, "/")
+	normalizedFormID = strings.ReplaceAll(normalizedFormID, "/", "")
+	normalizedFormID = strings.ReplaceAll(normalizedFormID, " ", "")
+	
+	// Validate the normalized form ID
+	if len(normalizedFormID) != 24 {
+		log.Printf("ERROR: Invalid form ID length after normalization: '%s' (len:%d)", normalizedFormID, len(normalizedFormID))
+		return
+	}
 	
 	message := &Message{
-		FormID: formID,
+		FormID: normalizedFormID,
 		Type:   messageType,
 		Data:   data,
 	}
 	
 	select {
 	case w.broadcast <- message:
-		log.Printf("INFO: Message queued for broadcast to form %s", formID)
+		// Message successfully queued
 	default:
-		log.Printf("WARN: Broadcast channel full, dropping analytics message for form %s", formID)
+		log.Printf("WARN: Broadcast channel full, dropping analytics message for form %s", normalizedFormID)
 	}
 }
 
@@ -163,7 +232,19 @@ func (w *WebSocketManager) GetRoomCount(formID string) int {
 	w.mutex.RLock()
 	defer w.mutex.RUnlock()
 	
-	if room, exists := w.rooms[formID]; exists {
+	// Normalize form ID to match room keys
+	normalizedFormID := strings.TrimSpace(formID)
+	normalizedFormID = strings.Trim(normalizedFormID, "/")
+	normalizedFormID = strings.ReplaceAll(normalizedFormID, "/", "")
+	normalizedFormID = strings.ReplaceAll(normalizedFormID, " ", "")
+	
+	// Validate FormID format
+	if len(normalizedFormID) != 24 {
+		log.Printf("WARN: GetRoomCount called with invalid FormID: '%s' (length: %d)", normalizedFormID, len(normalizedFormID))
+		return 0
+	}
+	
+	if room, exists := w.rooms[normalizedFormID]; exists {
 		return len(room)
 	}
 	return 0
@@ -186,16 +267,26 @@ func (w *WebSocketManager) registerClient(client *Client) {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
 	
+	// Validate FormID format before creating room
+	if len(client.FormID) != 24 || strings.Contains(client.FormID, "/") {
+		log.Printf("ERROR: Cannot register client with invalid FormID: '%s' (length: %d)", client.FormID, len(client.FormID))
+		return
+	}
+	
+	// Use the client's FormID directly as the room key
+	// The FormID is already immutable from the HandleConnection function
+	roomKey := client.FormID
+	
 	// Create room if it doesn't exist
-	if w.rooms[client.FormID] == nil {
-		w.rooms[client.FormID] = make(map[*Client]bool)
+	if w.rooms[roomKey] == nil {
+		w.rooms[roomKey] = make(map[*Client]bool)
 	}
 	
 	// Add client to room
-	w.rooms[client.FormID][client] = true
+	w.rooms[roomKey][client] = true
 	
 	log.Printf("INFO: Client %s joined form analytics %s (room size: %d)", 
-		client.ID, client.FormID, len(w.rooms[client.FormID]))
+		client.ID, roomKey, len(w.rooms[roomKey]))
 	
 	// Start client goroutines
 	go client.writePump()
@@ -212,8 +303,9 @@ func (w *WebSocketManager) registerClient(client *Client) {
 		select {
 		case client.Send <- data:
 		default:
-			close(client.Send)
-			delete(w.rooms[client.FormID], client)
+			// Welcome message failed to send, unregister client safely
+			log.Printf("WARN: Welcome message failed to send to client %s, unregistering", client.ID)
+			go w.UnregisterClient(client)
 		}
 	}
 }
@@ -223,70 +315,106 @@ func (w *WebSocketManager) unregisterClient(client *Client) {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
 	
-	if room, exists := w.rooms[client.FormID]; exists {
+	// Validate client has valid FormID
+	if len(client.FormID) != 24 {
+		log.Printf("ERROR: Unregistering client with invalid FormID: '%s' (length: %d) for client %s", 
+			client.FormID, len(client.FormID), client.ID)
+		close(client.Send)
+		return
+	}
+	
+	// Use the client's FormID directly as the room key
+	roomKey := client.FormID
+	
+	// Find and remove client from room
+	if room, exists := w.rooms[roomKey]; exists {
 		if _, exists := room[client]; exists {
 			delete(room, client)
+			
+			// Close the channel (client goroutines should handle cleanup)
 			close(client.Send)
 			
 			log.Printf("INFO: Client %s left form analytics %s (room size: %d)", 
-				client.ID, client.FormID, len(room))
+				client.ID, roomKey, len(room))
+			
+			// Clean up empty rooms to prevent memory leaks
+			if len(room) == 0 {
+				delete(w.rooms, roomKey)
+			}
+			return
 		}
 	}
+	
+	// Client not found in expected room
+	log.Printf("WARN: Client %s with FormID %s not found in expected room during unregistration", 
+		client.ID, client.FormID)
+	// Close the channel anyway
+	close(client.Send)
 }
 
 // broadcastToRoom broadcasts analytics message to all clients in a specific room
 func (w *WebSocketManager) broadcastToRoom(message *Message) {
-	w.mutex.RLock()
-	
-	// Log active rooms for operational visibility
-	log.Printf("INFO: Attempting broadcast to form: %s", message.FormID)
-	for formID, clients := range w.rooms {
-		if len(clients) > 0 {
-			log.Printf("INFO: Room %s has %d clients", formID, len(clients))
-		}
-	}
-	
-	room, exists := w.rooms[message.FormID]
-	w.mutex.RUnlock()
-	
-	if !exists {
-		log.Printf("INFO: Room for form %s does not exist, skipping broadcast", message.FormID)
+	// Validate message FormID first
+	if len(message.FormID) != 24 {
+		log.Printf("ERROR: Invalid FormID length: '%s' (length: %d)", message.FormID, len(message.FormID))
 		return
 	}
 	
-	if len(room) == 0 {
-		log.Printf("INFO: No active clients in room for form %s analytics, skipping broadcast", message.FormID)
+	w.mutex.Lock() // Use write lock for complete safety
+	
+	// Look for the room with exact match only
+	targetRoom, roomExists := w.rooms[message.FormID]
+	
+	if !roomExists {
+		// Room doesn't exist, no clients to broadcast to
+		w.mutex.Unlock()
 		return
 	}
 	
-	log.Printf("INFO: Broadcasting to %d clients in form %s analytics room", len(room), message.FormID)
+	if len(targetRoom) == 0 {
+		w.mutex.Unlock()
+		return
+	}
 	
 	// Prepare message data
 	data, err := json.Marshal(message)
 	if err != nil {
 		log.Printf("ERROR: Error marshaling analytics message: %v", err)
+		w.mutex.Unlock()
 		return
 	}
 	
-	// Broadcast to all clients in the room
-	w.mutex.RLock()
-	clients := make([]*Client, 0, len(room))
-	for client := range room {
+	// Safely copy clients list for broadcast (we already have the write lock)
+	clients := make([]*Client, 0, len(targetRoom))
+	for client := range targetRoom {
 		clients = append(clients, client)
 	}
-	w.mutex.RUnlock()
+	
+	// Release the lock before sending messages to prevent deadlocks
+	w.mutex.Unlock()
+	
+	// Store clients that need to be unregistered
+	var failedClients []*Client
 	
 	for _, client := range clients {
 		select {
 		case client.Send <- data:
+			// Success
 		default:
-			// Client's send channel is full, disconnect them
-			w.UnregisterClient(client)
+			// Client's send channel is full, mark for cleanup
+			log.Printf("WARN: Client %s send channel full, marking for cleanup from form %s", client.ID, client.FormID)
+			failedClients = append(failedClients, client)
 		}
 	}
 	
-	log.Printf("INFO: Broadcasted %s analytics to %d clients in form %s", 
-		message.Type, len(clients), message.FormID)
+	// Clean up failed clients without the main lock held
+	for _, client := range failedClients {
+		go func(c *Client) {
+			w.UnregisterClient(c)
+		}(client)
+	}
+	
+	// Successfully broadcasted to all clients
 }
 
 // writePump pumps messages from the manager to the websocket connection
@@ -300,6 +428,12 @@ func (c *Client) writePump() {
 		case message, ok := <-c.Send:
 			if !ok {
 				c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
+			
+			// Check client integrity before writing
+			if !c.IsValid() {
+				log.Printf("ERROR: Client %s corrupted during write (FormID: '%s') - closing connection", c.ID, c.FormID)
 				return
 			}
 			
@@ -319,6 +453,12 @@ func (c *Client) readPump() {
 	}()
 	
 	for {
+		// Check client integrity before processing messages
+		if !c.IsValid() {
+			log.Printf("ERROR: Client %s has been corrupted (FormID: '%s') - disconnecting", c.ID, c.FormID)
+			break
+		}
+		
 		var msg map[string]interface{}
 		err := c.Conn.ReadJSON(&msg)
 		if err != nil {
@@ -348,3 +488,4 @@ func (c *Client) readPump() {
 		}
 	}
 }
+

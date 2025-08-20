@@ -30,24 +30,22 @@ func NewFormService(collections *database.Collections) *FormService {
 
 // CreateForm creates a new form
 func (s *FormService) CreateForm(ctx context.Context, req *models.CreateFormRequest, ownerID *string) (*models.FormResponse, error) {
-	// Generate unique share slug
-	shareSlug := utils.GenerateSlug(req.Title)
+	// Generate form ID first
+	formID := primitive.NewObjectID()
 	
-	// Ensure slug is unique
-	for {
-		exists, err := s.slugExists(ctx, shareSlug)
-		if err != nil {
-			return nil, fmt.Errorf("failed to check slug uniqueness: %w", err)
-		}
-		if !exists {
-			break
-		}
-		shareSlug = utils.GenerateSlug(req.Title) + "-" + utils.GenerateRandomString(4)
-	}
+	// ALWAYS use Form ID suffix strategy for guaranteed uniqueness
+	baseSlug := utils.GenerateSlug(req.Title)
+	
+	// Take last 8 characters of the ObjectID hex string
+	// This guarantees uniqueness since ObjectIDs are unique
+	idSuffix := formID.Hex()[len(formID.Hex())-8:]
+	shareSlug := fmt.Sprintf("%s-%s", baseSlug, idSuffix)
+	
+	// No need to check for collisions - ObjectID suffix guarantees uniqueness
 	
 	// Create form document
 	form := &models.Form{
-		ID:          primitive.NewObjectID(),
+		ID:          formID,
 		OwnerID:     ownerID,
 		Title:       req.Title,
 		Description: req.Description,

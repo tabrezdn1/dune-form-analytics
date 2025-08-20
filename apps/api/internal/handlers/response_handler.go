@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/csv"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -266,6 +267,11 @@ func (h *ResponseHandler) ExportCSV(c *fiber.Ctx) error {
 
 // updateAnalyticsAndBroadcast updates analytics and broadcasts to WebSocket clients
 func (h *ResponseHandler) updateAnalyticsAndBroadcast(formID string, response *models.ResponseData) {
+	// FormID should already be clean and valid - just validate it
+	if len(formID) != 24 {
+		log.Printf("ERROR: Invalid formID in updateAnalyticsAndBroadcast: '%s' (len:%d)", formID, len(formID))
+		return
+	}
 	// Convert formID to ObjectID
 	objectID, err := primitive.ObjectIDFromHex(formID)
 	if err != nil {
@@ -308,6 +314,7 @@ func (h *ResponseHandler) updateAnalyticsAndBroadcast(formID string, response *m
 		"updatedAt": analytics.UpdatedAt,
 	}
 	
+	// Broadcast analytics update via WebSocket
 	h.wsManager.Broadcast(formID, "analytics:update", analyticsData)
 }
 

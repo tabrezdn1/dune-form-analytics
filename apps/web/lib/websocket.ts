@@ -124,17 +124,21 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
 
   useEffect(() => {
     let isActive = true
+    let timeoutId: NodeJS.Timeout
     
-    // React Strict Mode compatible connection
-    if (isActive) {
-      connect()
-    }
+    // Delay connection slightly to prevent React Strict Mode double connections
+    timeoutId = setTimeout(() => {
+      if (isActive) {
+        connect()
+      }
+    }, 50)
 
     return () => {
       isActive = false
+      clearTimeout(timeoutId)
       disconnect()
     }
-  }, [url])
+  }, [url]) // Only reconnect when URL actually changes
   
   // Handle browser page unload events
   useEffect(() => {
@@ -157,29 +161,32 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
   }
 }
 
-// Hook for form analytics WebSocket connection
+// Hook for form analytics WebSocket connection  
 export function useFormAnalyticsWebSocket(formId: string, onAnalyticsUpdate?: (analytics: AnalyticsUpdate) => void) {
-  const getWebSocketUrl = () => {
-    return process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080'
-  }
-  
-  const WS_URL = getWebSocketUrl()
-  const url = `${WS_URL}/ws/forms/${formId}`
+  // Use the same environment config as the rest of the app for consistency
+  const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080'
+  const url = `${wsUrl}/ws/forms/${formId}`
 
   return useWebSocket(url, {
     onMessage: (data: WebSocketMessage) => {
+      console.log(`🔗 WebSocket message received for form ${formId}:`, data.type);
       if (data.type === 'analytics:update') {
         onAnalyticsUpdate?.(data.data)
+      } else if (data.type === 'connected') {
+        console.log(`✅ WebSocket connected to form ${formId} analytics`);
       }
     },
     onConnect: () => {
-      // Connection established
+      console.log(`🚀 WebSocket connected to form ${formId}`);
     },
     onDisconnect: () => {
-      // Connection closed
+      console.warn(`🔌 WebSocket disconnected from form ${formId}`);
     },
     onError: (error) => {
-      console.error(`WebSocket connection error for form ${formId}:`, error)
+      console.error(`❌ WebSocket connection error for form ${formId}:`, error);
+      console.error(`WebSocket URL: ${url}`);
     },
+    reconnectAttempts: 5,
+    reconnectInterval: 3000,
   })
 }
