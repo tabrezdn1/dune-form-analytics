@@ -10,6 +10,19 @@
   body {
     @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
   }
+
+  /* Toast theme variables */
+  :root {
+    --toast-bg: rgb(255, 255, 255);
+    --toast-color: rgb(17, 24, 39);
+    --toast-border: rgb(229, 231, 235);
+  }
+
+  .dark {
+    --toast-bg: rgb(31, 41, 55);
+    --toast-color: rgb(243, 244, 246);
+    --toast-border: rgb(75, 85, 99);
+  }
 }
 
 @layer components {

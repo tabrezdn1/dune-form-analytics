@@ -56,6 +56,10 @@ export function Providers({ children }: { children: ReactNode }) {
               background: 'var(--toast-bg)',
               color: 'var(--toast-color)',
               border: '1px solid var(--toast-border)',
+              borderRadius: '8px',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+              fontSize: '14px',
+              fontWeight: '500',
             },
             success: {
               iconTheme: {
