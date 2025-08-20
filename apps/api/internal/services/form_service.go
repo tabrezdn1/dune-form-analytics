@@ -125,6 +125,21 @@ func (s *FormService) UpdateForm(ctx context.Context, formID string, req *models
 		return nil, fmt.Errorf("invalid form ID: %w", err)
 	}
 	
+	// Get existing form to compare field changes
+	var existingForm models.Form
+	filter := bson.M{"_id": objectID}
+	if ownerID != nil {
+		filter["ownerId"] = *ownerID
+	}
+	
+	err = s.collections.Forms.FindOne(ctx, filter).Decode(&existingForm)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("form not found")
+		}
+		return nil, fmt.Errorf("failed to get form: %w", err)
+	}
+	
 	// Build update document
 	update := bson.M{
 		"$set": bson.M{
@@ -144,20 +159,120 @@ func (s *FormService) UpdateForm(ctx context.Context, formID string, req *models
 	if req.Fields != nil {
 		update["$set"].(bson.M)["fields"] = req.Fields
 		
-		// If fields are updated, reinitialize analytics
-		analytics := models.InitializeAnalytics(objectID, req.Fields)
-		_, err = s.collections.Analytics.ReplaceOne(
-			ctx,
-			bson.M{"_id": objectID},
-			analytics,
-		)
+		// Smart analytics preservation logic
+		shouldResetAnalytics := false
+		var incompatibleChanges []string
+		
+		// Check for incompatible field changes
+		existingFieldMap := make(map[string]models.Field)
+		for _, field := range existingForm.Fields {
+			existingFieldMap[field.ID] = field
+		}
+		
+		newFieldMap := make(map[string]models.Field)
+		for _, field := range req.Fields {
+			newFieldMap[field.ID] = field
+			
+			// Check if this field existed before and if the type changed
+			if existingField, exists := existingFieldMap[field.ID]; exists {
+				if existingField.Type != field.Type {
+					shouldResetAnalytics = true
+					incompatibleChanges = append(incompatibleChanges, 
+						fmt.Sprintf("Field '%s' type changed from %s to %s", 
+							field.ID, existingField.Type, field.Type))
+				}
+			}
+		}
+		
+		// Check for deleted fields (fields that existed before but not in new update)
+		for fieldID := range existingFieldMap {
+			if _, exists := newFieldMap[fieldID]; !exists {
+				shouldResetAnalytics = true
+				incompatibleChanges = append(incompatibleChanges, 
+					fmt.Sprintf("Field '%s' was deleted", fieldID))
+			}
+		}
+		
+		// Update analytics based on the type of changes
+		var existingAnalytics models.Analytics
+		err = s.collections.Analytics.FindOne(ctx, bson.M{"_id": objectID}).Decode(&existingAnalytics)
 		if err != nil {
-			log.Printf("WARN: Failed to update analytics for form %s: %v", formID, err)
+			if err == mongo.ErrNoDocuments {
+				// Initialize analytics if they don't exist
+				analytics := models.InitializeAnalytics(objectID, req.Fields)
+				_, err = s.collections.Analytics.InsertOne(ctx, analytics)
+				if err != nil {
+					log.Printf("WARN: Failed to create analytics for form %s: %v", formID, err)
+				}
+			} else {
+				log.Printf("WARN: Failed to get analytics for form %s: %v", formID, err)
+			}
+		} else {
+			if shouldResetAnalytics {
+				// Reset analytics due to incompatible changes
+				log.Printf("INFO: Resetting analytics for form %s due to incompatible changes: %v", 
+					formID, incompatibleChanges)
+				
+				newAnalytics := models.InitializeAnalytics(objectID, req.Fields)
+				newAnalytics.UpdatedAt = time.Now()
+				
+				upsert := true
+				_, err = s.collections.Analytics.ReplaceOne(
+					ctx,
+					bson.M{"_id": objectID},
+					newAnalytics,
+					&options.ReplaceOptions{Upsert: &upsert},
+				)
+				if err != nil {
+					log.Printf("WARN: Failed to reset analytics for form %s: %v", formID, err)
+				}
+			} else {
+				// Preserve existing analytics data (compatible changes only)
+				updatedByField := make(map[string]models.FieldAnalytics)
+				
+				// Keep existing field analytics and add new ones
+				for _, field := range req.Fields {
+					if existingFieldAnalytics, exists := existingAnalytics.ByField[field.ID]; exists {
+						// Keep existing analytics for this field
+						updatedByField[field.ID] = existingFieldAnalytics
+					} else {
+						// Initialize analytics for new field
+						analytics := models.FieldAnalytics{
+							Count: 0,
+						}
+						
+						// Initialize distribution for MCQ and Checkbox fields
+						if field.Type == models.FieldTypeMCQ || field.Type == models.FieldTypeCheckbox {
+							analytics.Distribution = make(map[string]int)
+							for _, option := range field.Options {
+								analytics.Distribution[option.ID] = 0
+							}
+						}
+						
+						updatedByField[field.ID] = analytics
+					}
+				}
+				
+				// Update analytics with preserved data
+				existingAnalytics.ByField = updatedByField
+				existingAnalytics.UpdatedAt = time.Now()
+				
+				upsert := true
+				_, err = s.collections.Analytics.ReplaceOne(
+					ctx,
+					bson.M{"_id": objectID},
+					existingAnalytics,
+					&options.ReplaceOptions{Upsert: &upsert},
+				)
+				if err != nil {
+					log.Printf("WARN: Failed to update analytics for form %s: %v", formID, err)
+				}
+			}
 		}
 	}
 	
-	// Build filter
-	filter := bson.M{"_id": objectID}
+	// Build filter for update
+	filter = bson.M{"_id": objectID}
 	if ownerID != nil {
 		filter["ownerId"] = *ownerID
 	}

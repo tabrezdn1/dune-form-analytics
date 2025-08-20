@@ -1,13 +1,17 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { Form } from '@/lib/types'
+import React, { useState, useEffect, useMemo } from 'react'
+import { Form, Analytics, FormField as Field } from '@/lib/types'
 import { useFormBuilder } from '@/lib/form-builder-state'
 import { FieldPalette } from '@/components/builder/FieldPalette'
 import { FormCanvas } from '@/components/builder/FormCanvas'
 import { FieldInspector } from '@/components/builder/FieldInspector'
 import { FormRenderer } from '@/components/forms/FormRenderer'
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs'
+import { AnalyticsImpactBanner, AnalyticsImpactIndicator } from '@/components/builder/AnalyticsImpactBanner'
+import { AnalyticsWarningDialog } from '@/components/dialogs/AnalyticsWarningDialog'
+import { UndoNotification } from '@/components/builder/UndoNotification'
+import { analyzeFormChanges } from '@/lib/form-change-analyzer'
 import { api } from '@/lib/api'
 import toast from 'react-hot-toast'
 
@@ -18,6 +22,11 @@ interface FormBuilderClientProps {
 export default function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
   const [activeTab, setActiveTab] = useState<'build' | 'preview'>('build')
   const [showPreview, setShowPreview] = useState(false)
+  const [formAnalytics, setFormAnalytics] = useState<Analytics | null>(null)
+  const [showWarningDialog, setShowWarningDialog] = useState(false)
+  const [pendingSaveAction, setPendingSaveAction] = useState<'save' | 'publish' | null>(null)
+  const [recentlyDeletedField, setRecentlyDeletedField] = useState<Field | null>(null)
+  const [deletedFieldsHistory, setDeletedFieldsHistory] = useState<Field[]>([])
 
   const {
     title,
@@ -30,6 +39,7 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
     setTitle,
     setDescription,
     addField,
+    restoreField,
     updateField,
     deleteField,
     reorderFields,
@@ -46,10 +56,79 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
   useEffect(() => {
     if (initialForm) {
       loadForm(initialForm)
+      // Fetch analytics for existing form
+      fetchFormAnalytics(initialForm.id)
     }
   }, [initialForm, loadForm])
 
+  const fetchFormAnalytics = async (formId: string) => {
+    try {
+      const response = await api.getAnalytics(formId)
+      if (response.success && response.data) {
+        setFormAnalytics(response.data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch analytics:', error)
+    }
+  }
+
   const selectedField = fields.find(field => field.id === selectedFieldId) || null
+
+  // Analyze form changes
+  const changeAnalysis = useMemo(() => {
+    return analyzeFormChanges(initialForm || null, title, description, fields)
+  }, [initialForm, title, description, fields])
+
+  // Wrap deleteField to track deleted fields for undo
+  const handleDeleteField = (fieldId: string) => {
+    const fieldToDelete = fields.find(f => f.id === fieldId)
+    if (fieldToDelete) {
+      // Save the field for potential undo
+      setRecentlyDeletedField(fieldToDelete)
+      setDeletedFieldsHistory(prev => [...prev, fieldToDelete])
+      
+      // Show a warning if this will reset analytics
+      if (initialForm && formAnalytics?.totalResponses) {
+        const fieldHasResponses = formAnalytics.byField?.[fieldId]?.count > 0
+        if (fieldHasResponses) {
+          // Field has responses, deletion will affect analytics
+          // The UndoNotification will show automatically
+        }
+      }
+    }
+    deleteField(fieldId)
+  }
+
+  // Handle undo of field deletion
+  const handleUndoDelete = (field: Field) => {
+    // Find the original position of the field if it existed in the initial form
+    let targetIndex: number | undefined
+    
+    if (initialForm?.fields) {
+      const originalIndex = initialForm.fields.findIndex(f => f.id === field.id)
+      if (originalIndex !== -1) {
+        // Count how many fields before this one in the original form are still present
+        let adjustedIndex = 0
+        for (let i = 0; i < originalIndex; i++) {
+          if (fields.some(f => f.id === initialForm.fields![i].id)) {
+            adjustedIndex++
+          }
+        }
+        targetIndex = adjustedIndex
+      }
+    }
+    
+    // Restore the field using the proper action
+    restoreField(field, targetIndex)
+    
+    // Clear the recently deleted field
+    setRecentlyDeletedField(null)
+    
+    // Remove from history
+    setDeletedFieldsHistory(prev => prev.filter(f => f.id !== field.id))
+    
+    toast.success(`Field "${field.label}" restored`)
+  }
 
   const handleSave = async (publish = false) => {
     if (!canSave()) {
@@ -62,7 +141,20 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
       return
     }
 
+    // Check if changes will reset analytics
+    if (initialForm && changeAnalysis.willResetAnalytics && formAnalytics?.totalResponses) {
+      setPendingSaveAction(publish ? 'publish' : 'save')
+      setShowWarningDialog(true)
+      return
+    }
+
+    await performSave(publish)
+  }
+
+  const performSave = async (publish = false) => {
     setSaving(true)
+    setShowWarningDialog(false)
+    setPendingSaveAction(null)
 
     try {
       const formData = getFormData()
@@ -98,11 +190,20 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
         }
       }
       
-      toast.success(
-        publish 
-          ? `Form published! Share link: ${window.location.origin}/f/${form.shareSlug}`
-          : initialForm ? 'Form updated successfully!' : 'Form saved as draft!'
-      )
+      // Show appropriate success message
+      if (changeAnalysis.willResetAnalytics && initialForm) {
+        toast.success(
+          publish 
+            ? 'Form published! Analytics have been reset.'
+            : 'Form updated! Analytics have been reset.'
+        )
+      } else {
+        toast.success(
+          publish 
+            ? `Form published! Share link: ${window.location.origin}/f/${form.shareSlug}`
+            : initialForm ? 'Form updated successfully!' : 'Form saved as draft!'
+        )
+      }
       
       // Redirect to analytics dashboard if published
       if (publish) {
@@ -122,94 +223,74 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
   }
 
   const headerActions = (
-    <>
+    <div className="flex items-center gap-6">
+      {/* Status indicators - simplified and smaller */}
       {isDirty && (
-        <div className="flex items-center space-x-2 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 px-4 py-2 rounded-xl border border-orange-200 dark:border-orange-800">
-          <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-          <span className="text-sm font-medium text-orange-700 dark:text-orange-300">
-            Unsaved changes
-          </span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
+            <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
+            <span className="text-xs font-medium text-orange-700 dark:text-orange-300">
+              Unsaved
+            </span>
+          </div>
+          {initialForm && changeAnalysis.willResetAnalytics && (
+            <div className="text-xs text-yellow-600 dark:text-yellow-400 font-medium">
+              ⚠️ Analytics impact
+            </div>
+          )}
         </div>
       )}
       
-      {/* Modern Tab switcher */}
-      <div className="flex bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-1.5 shadow-inner">
+      {/* Tab switcher - simplified */}
+      <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
         <button
           onClick={() => setActiveTab('build')}
-          className={`px-6 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
+          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
             activeTab === 'build'
-              ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-lg transform scale-105'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-white/50 dark:hover:bg-gray-700/50'
+              ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
           }`}
         >
-          <span className="flex items-center space-x-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-            </svg>
-            <span>Build</span>
-          </span>
+          Build
         </button>
         <button
           onClick={() => setActiveTab('preview')}
-          className={`px-6 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
+          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
             activeTab === 'preview'
-              ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-lg transform scale-105'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-white/50 dark:hover:bg-gray-700/50'
+              ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
           }`}
         >
-          <span className="flex items-center space-x-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-            <span>Preview</span>
-          </span>
+          Preview
         </button>
       </div>
 
-      {/* Modern Action buttons */}
-      <div className="flex items-center space-x-3">
+      {/* Action buttons - cleaner */}
+      <div className="flex items-center gap-3">
         <button
           onClick={() => handleSave(false)}
           disabled={!canSave() || isSaving}
-          className="px-6 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSaving ? (
-            <>
-              <div className="w-4 h-4 border-2 border-gray-400 border-t-gray-600 rounded-full animate-spin"></div>
-              <span>Saving...</span>
-            </>
+            <span className="flex items-center gap-2">
+              <div className="w-3 h-3 border-2 border-gray-400 border-t-gray-600 rounded-full animate-spin"></div>
+              Saving...
+            </span>
           ) : (
-            <>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-              <span>{initialForm ? 'Update Draft' : 'Save Draft'}</span>
-            </>
+            <span>{initialForm ? 'Save' : 'Save Draft'}</span>
           )}
         </button>
         
         <button
           onClick={() => handleSave(true)}
           disabled={!canSave() || isSaving}
-          className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl hover:from-emerald-700 hover:to-teal-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2"
+          className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSaving ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              <span>Publishing...</span>
-            </>
-          ) : (
-            <>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-              <span>Publish</span>
-            </>
-          )}
+          {isSaving ? 'Publishing...' : 'Publish'}
         </button>
       </div>
-    </>
+    </div>
   )
 
   return (
@@ -280,27 +361,25 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
         
         {/* Modern Page Header */}
         <div className="mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <div className="flex items-center justify-between">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     {initialForm ? 'Edit Form' : 'Form Builder'}
                   </h1>
-                  <p className="mt-1 text-gray-600 dark:text-gray-400">
-                    {initialForm ? 'Modify your form with drag-and-drop interface' : 'Create dynamic forms with drag-and-drop interface'}
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {initialForm ? 'Modify your form' : 'Create a new form'}
                   </p>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-4">
-                {headerActions}
-              </div>
+              {headerActions}
             </div>
           </div>
         </div>
@@ -329,7 +408,15 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
             </div>
 
             {/* Form Canvas - Main Center Area */}
-            <div className="lg:col-span-6">
+            <div className="lg:col-span-6 space-y-4">
+              {/* Analytics Impact Banner */}
+              {initialForm && changeAnalysis.hasChanges && (
+                <AnalyticsImpactBanner 
+                  analysis={changeAnalysis} 
+                  responseCount={formAnalytics?.totalResponses || 0}
+                />
+              )}
+              
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 {/* Canvas Header */}
                 <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 p-6 border-b border-gray-200 dark:border-gray-700">
@@ -403,7 +490,7 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
                         fields={fields}
                         selectedFieldId={selectedFieldId}
                         onSelectField={selectField}
-                        onDeleteField={deleteField}
+                        onDeleteField={handleDeleteField}
                         onReorderFields={reorderFields}
                         onAddField={addField}
                       />
@@ -607,6 +694,25 @@ export default function FormBuilderClient({ initialForm }: FormBuilderClientProp
             </div>
           </div>
         )}
+
+        {/* Analytics Warning Dialog */}
+        <AnalyticsWarningDialog
+          isOpen={showWarningDialog}
+          analysis={changeAnalysis}
+          currentResponseCount={formAnalytics?.totalResponses || 0}
+          onConfirm={() => performSave(pendingSaveAction === 'publish')}
+          onCancel={() => {
+            setShowWarningDialog(false)
+            setPendingSaveAction(null)
+          }}
+        />
+
+        {/* Undo Notification for Deleted Fields */}
+        <UndoNotification
+          deletedField={recentlyDeletedField}
+          onUndo={handleUndoDelete}
+          onDismiss={() => setRecentlyDeletedField(null)}
+        />
         </div>
       </div>
   )

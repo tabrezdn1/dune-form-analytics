@@ -17,6 +17,7 @@ export type FormBuilderAction =
   | { type: 'SET_TITLE'; payload: string }
   | { type: 'SET_DESCRIPTION'; payload: string }
   | { type: 'ADD_FIELD'; payload: { type: FormField['type']; index?: number } }
+  | { type: 'RESTORE_FIELD'; payload: { field: FormField; index?: number } }
   | { type: 'UPDATE_FIELD'; payload: { id: string; updates: Partial<FormField> } }
   | { type: 'DELETE_FIELD'; payload: { id: string } }
   | { type: 'REORDER_FIELDS'; payload: { fromIndex: number; toIndex: number } }
@@ -69,6 +70,24 @@ function formBuilderReducer(state: FormBuilderState, action: FormBuilderAction):
         ...state,
         fields: newFields,
         selectedFieldId: newField.id,
+        isDirty: true,
+      }
+    }
+
+    case 'RESTORE_FIELD': {
+      const { field, index } = action.payload
+      const newFields = [...state.fields]
+      
+      if (index !== undefined && index >= 0 && index <= newFields.length) {
+        newFields.splice(index, 0, field)
+      } else {
+        newFields.push(field)
+      }
+
+      return {
+        ...state,
+        fields: newFields,
+        selectedFieldId: field.id,
         isDirty: true,
       }
     }
@@ -242,6 +261,10 @@ export function useFormBuilder(initialForm?: {
     dispatch({ type: 'ADD_FIELD', payload: { type, index } })
   }, [])
 
+  const restoreField = useCallback((field: FormField, index?: number) => {
+    dispatch({ type: 'RESTORE_FIELD', payload: { field, index } })
+  }, [])
+
   const updateField = useCallback((id: string, updates: Partial<FormField>) => {
     dispatch({ type: 'UPDATE_FIELD', payload: { id, updates } })
   }, [])
@@ -344,6 +367,7 @@ export function useFormBuilder(initialForm?: {
     setTitle,
     setDescription,
     addField,
+    restoreField,
     updateField,
     deleteField,
     reorderFields,
