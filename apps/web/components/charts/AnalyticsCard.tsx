@@ -46,33 +46,6 @@ export function AnalyticsCard({
           <div className="space-y-4">
             {/* Response Overview */}
             <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl border border-emerald-200/30 dark:border-emerald-700/30 p-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-sm">
-                    <svg
-                      className="w-4 h-4 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Response Activity
-                    </p>
-                    <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                      {analytics.count.toLocaleString()} responses
-                    </p>
-                  </div>
-                </div>
-              </div>
 
               {/* Horizontal Response Bar */}
               <div className="space-y-3">
@@ -105,30 +78,7 @@ export function AnalyticsCard({
                   </div>
                 </div>
 
-                {/* Response Breakdown */}
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div className="text-center bg-white/40 dark:bg-gray-800/40 rounded-lg p-3">
-                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                      {analytics.count}
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      Responses
-                    </div>
-                  </div>
-                  <div className="text-center bg-white/40 dark:bg-gray-800/40 rounded-lg p-3">
-                    <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                      {totalFormResponses > 0
-                        ? Math.round(
-                            (analytics.count / totalFormResponses) * 100,
-                          )
-                        : 0}
-                      %
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      Response Rate
-                    </div>
-                  </div>
-                </div>
+
               </div>
             </div>
           </div>
@@ -298,7 +248,7 @@ export function AnalyticsCard({
 
       {/* Modern Card Footer */}
       <div className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-700/50 px-5 py-4 border-t border-gray-200/50 dark:border-gray-700/50">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg
@@ -325,7 +275,7 @@ export function AnalyticsCard({
             </div>
           </div>
 
-          <div className="flex items-center justify-end sm:justify-start space-x-3">
+          <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg
                 className="w-5 h-5 text-white"

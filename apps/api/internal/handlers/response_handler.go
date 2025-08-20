@@ -265,6 +265,144 @@ func (h *ResponseHandler) ExportCSV(c *fiber.Ctx) error {
 	return nil
 }
 
+// ExportAnalyticsCSV exports form analytics as CSV
+func (h *ResponseHandler) ExportAnalyticsCSV(c *fiber.Ctx) error {
+	formID := c.Params("id")
+	if formID == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Form ID is required",
+		})
+	}
+
+	// Get owner ID from context (if authenticated)
+	var ownerID *string
+	if userID := c.Locals("userID"); userID != nil {
+		if uid, ok := userID.(string); ok {
+			ownerID = &uid
+		}
+	}
+
+	// Get form details
+	form, err := h.formService.GetFormByID(c.Context(), formID, ownerID)
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "Form not found",
+		})
+	}
+
+	// Get analytics data
+	analytics, err := h.analyticsService.GetAnalytics(c.Context(), formID, ownerID)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to get analytics",
+		})
+	}
+
+	// Set CSV headers
+	c.Set("Content-Type", "text/csv")
+	c.Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s-analytics.csv"`, form.Title))
+
+	// Create CSV writer
+	writer := csv.NewWriter(c.Response().BodyWriter())
+	defer writer.Flush()
+
+	// Write Form Summary
+	writer.Write([]string{"FORM ANALYTICS REPORT"})
+	writer.Write([]string{""})
+	writer.Write([]string{"Form Name", form.Title})
+	writer.Write([]string{"Form Status", form.Status})
+	writer.Write([]string{"Total Responses", fmt.Sprintf("%d", analytics.TotalResponses)})
+	writer.Write([]string{"Export Date", time.Now().Format("2006-01-02 15:04:05")})
+	writer.Write([]string{""})
+
+	// Write Field Analytics Header
+	writer.Write([]string{"FIELD-BY-FIELD ANALYTICS"})
+	writer.Write([]string{""})
+	writer.Write([]string{
+		"Field Name", 
+		"Field Type", 
+		"Required", 
+		"Total Responses", 
+		"Response Rate (%)",
+		"Skip Count",
+		"Skip Rate (%)",
+	})
+
+	// Write field analytics data
+	for _, field := range form.Fields {
+		fieldAnalytics := analytics.ByField[field.ID]
+		responseRate := float64(0)
+		skipCount := 0
+		skipRate := float64(0)
+		
+		if analytics.TotalResponses > 0 {
+			responseRate = (float64(fieldAnalytics.Count) / float64(analytics.TotalResponses)) * 100
+			skipCount = analytics.TotalResponses - fieldAnalytics.Count
+			skipRate = (float64(skipCount) / float64(analytics.TotalResponses)) * 100
+		}
+
+		row := []string{
+			field.Label,
+			string(field.Type),
+			fmt.Sprintf("%v", field.Required),
+			fmt.Sprintf("%d", fieldAnalytics.Count),
+			fmt.Sprintf("%.2f", responseRate),
+			fmt.Sprintf("%d", skipCount),
+			fmt.Sprintf("%.2f", skipRate),
+		}
+		writer.Write(row)
+	}
+
+	writer.Write([]string{""})
+
+	// Write Distribution Data for MCQ/Checkbox fields
+	writer.Write([]string{"RESPONSE DISTRIBUTION"})
+	writer.Write([]string{""})
+	
+	for _, field := range form.Fields {
+		if field.Type == "mcq" || field.Type == "checkbox" {
+			fieldAnalytics := analytics.ByField[field.ID]
+			if fieldAnalytics.Distribution != nil && len(fieldAnalytics.Distribution) > 0 {
+				writer.Write([]string{fmt.Sprintf("%s (Distribution)", field.Label)})
+				writer.Write([]string{"Option", "Count", "Percentage"})
+				
+				for option, count := range fieldAnalytics.Distribution {
+					percentage := float64(0)
+					if fieldAnalytics.Count > 0 {
+						percentage = (float64(count) / float64(fieldAnalytics.Count)) * 100
+					}
+					writer.Write([]string{
+						option,
+						fmt.Sprintf("%d", count),
+						fmt.Sprintf("%.2f%%", percentage),
+					})
+				}
+				writer.Write([]string{""})
+			}
+		}
+	}
+
+	// Write Rating Averages
+	writer.Write([]string{"RATING FIELDS"})
+	writer.Write([]string{""})
+	writer.Write([]string{"Field Name", "Average Rating", "Response Count"})
+	
+	for _, field := range form.Fields {
+		if field.Type == "rating" {
+			fieldAnalytics := analytics.ByField[field.ID]
+			if fieldAnalytics.Average != nil && *fieldAnalytics.Average > 0 {
+				writer.Write([]string{
+					field.Label,
+					fmt.Sprintf("%.2f", *fieldAnalytics.Average),
+					fmt.Sprintf("%d", fieldAnalytics.Count),
+				})
+			}
+		}
+	}
+
+	return nil
+}
+
 // updateAnalyticsAndBroadcast updates analytics and broadcasts to WebSocket clients
 func (h *ResponseHandler) updateAnalyticsAndBroadcast(formID string, response *models.ResponseData) {
 	// FormID should already be clean and valid - just validate it

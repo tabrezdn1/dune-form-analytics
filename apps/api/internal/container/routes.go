@@ -92,6 +92,7 @@ func setupRoutes(
 	api.Post("/forms/:id/submit", responseHandler.SubmitResponse)
 	api.Get("/forms/:id/responses", authMiddleware, responseHandler.GetResponses)
 	api.Get("/forms/:id/export.csv", authMiddleware, responseHandler.ExportCSV)
+	api.Get("/forms/:id/analytics.csv", authMiddleware, responseHandler.ExportAnalyticsCSV)
 
 	// Analytics routes (require authentication)
 	api.Get("/forms/:id/analytics", authMiddleware, analyticsHandler.GetAnalytics)

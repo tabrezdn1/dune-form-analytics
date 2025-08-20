@@ -152,9 +152,36 @@ class ApiClient {
     
     const url = `${this.getBaseURL()}/api/forms/${formId}/export.csv?${queryParams}`
     
-    const response = await fetch(url)
+    // Get JWT token from localStorage if available
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null
+    
+    const response = await fetch(url, {
+      headers: {
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+      },
+    })
+    
     if (!response.ok) {
       throw new Error(`Failed to export CSV: ${response.statusText}`)
+    }
+    
+    return response.blob()
+  }
+
+  async exportAnalyticsCSV(formId: string): Promise<Blob> {
+    const url = `${this.getBaseURL()}/api/forms/${formId}/analytics.csv`
+    
+    // Get JWT token from localStorage if available
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null
+    
+    const response = await fetch(url, {
+      headers: {
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+      },
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Failed to export analytics CSV: ${response.statusText}`)
     }
     
     return response.blob()
