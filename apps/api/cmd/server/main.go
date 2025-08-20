@@ -1,3 +1,23 @@
+// @title Dune Form Analytics API
+// @version 1.0.0
+// @description Professional form builder with real-time analytics and comprehensive data insights
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /api
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
+
 package main
 
 import (
@@ -8,6 +28,7 @@ import (
 
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/container"
 	"github.com/joho/godotenv"
+	_ "github.com/tabrezdn1/dune-form-analytics/api/docs"
 )
 
 func main() {

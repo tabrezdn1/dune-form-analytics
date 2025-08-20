@@ -45,6 +45,18 @@ func NewResponseHandler(
 }
 
 // SubmitResponse handles form response submission
+// @Summary Submit form response
+// @Description Submit a response to a published form
+// @Tags Responses
+// @Accept json
+// @Produce json
+// @Param id path string true "Form ID"
+// @Param response body models.SubmitResponseRequest true "Form response data"
+// @Success 201 {object} map[string]interface{} "Response submitted successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 404 {object} map[string]interface{} "Form not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /forms/{id}/submit [post]
 func (h *ResponseHandler) SubmitResponse(c *fiber.Ctx) error {
 	formID := c.Params("id")
 	if formID == "" {
@@ -110,6 +122,21 @@ func (h *ResponseHandler) SubmitResponse(c *fiber.Ctx) error {
 }
 
 // GetResponses retrieves responses for a form
+// @Summary Get form responses
+// @Description Retrieve paginated responses for a specific form
+// @Tags Responses
+// @Accept json
+// @Produce json
+// @Param id path string true "Form ID"
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Items per page" default(10)
+// @Success 200 {object} map[string]interface{} "Responses retrieved successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Form not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security BearerAuth
+// @Router /forms/{id}/responses [get]
 func (h *ResponseHandler) GetResponses(c *fiber.Ctx) error {
 	formID := c.Params("id")
 	if formID == "" {
@@ -165,6 +192,19 @@ func (h *ResponseHandler) GetResponses(c *fiber.Ctx) error {
 }
 
 // ExportCSV exports form responses as CSV
+// @Summary Export responses as CSV
+// @Description Export all form responses as a CSV file
+// @Tags Responses
+// @Accept json
+// @Produce text/csv
+// @Param id path string true "Form ID"
+// @Success 200 {string} string "CSV file content"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Form not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security BearerAuth
+// @Router /forms/{id}/export.csv [get]
 func (h *ResponseHandler) ExportCSV(c *fiber.Ctx) error {
 	formID := c.Params("id")
 	if formID == "" {
@@ -266,6 +306,19 @@ func (h *ResponseHandler) ExportCSV(c *fiber.Ctx) error {
 }
 
 // ExportAnalyticsCSV exports form analytics as CSV
+// @Summary Export analytics as CSV
+// @Description Export form analytics data as a CSV file
+// @Tags Analytics
+// @Accept json
+// @Produce text/csv
+// @Param id path string true "Form ID"
+// @Success 200 {string} string "CSV file content"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Form not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security BearerAuth
+// @Router /forms/{id}/analytics.csv [get]
 func (h *ResponseHandler) ExportAnalyticsCSV(c *fiber.Ctx) error {
 	formID := c.Params("id")
 	if formID == "" {

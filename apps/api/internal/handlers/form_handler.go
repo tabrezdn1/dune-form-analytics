@@ -26,6 +26,18 @@ func NewFormHandler(formService interfaces.FormServiceInterface, validator *vali
 }
 
 // CreateForm creates a new form
+// @Summary Create a new form
+// @Description Create a new form with the provided form data
+// @Tags Forms
+// @Accept json
+// @Produce json
+// @Param form body models.CreateFormRequest true "Form creation data"
+// @Success 201 {object} models.FormResponse "Form created successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security BearerAuth
+// @Router /forms [post]
 func (h *FormHandler) CreateForm(c *fiber.Ctx) error {
 	var req models.CreateFormRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -65,6 +77,19 @@ func (h *FormHandler) CreateForm(c *fiber.Ctx) error {
 }
 
 // GetForm retrieves a form by ID
+// @Summary Get a form by ID
+// @Description Retrieve form details by form ID
+// @Tags Forms
+// @Accept json
+// @Produce json
+// @Param id path string true "Form ID"
+// @Success 200 {object} models.Form "Form retrieved successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Form not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security BearerAuth
+// @Router /forms/{id} [get]
 func (h *FormHandler) GetForm(c *fiber.Ctx) error {
 	formID := c.Params("id")
 	if formID == "" {
@@ -95,6 +120,17 @@ func (h *FormHandler) GetForm(c *fiber.Ctx) error {
 }
 
 // GetPublicForm retrieves a public form by slug
+// @Summary Get public form by slug
+// @Description Retrieve a published form using its slug (public access)
+// @Tags Forms
+// @Accept json
+// @Produce json
+// @Param slug path string true "Form slug"
+// @Success 200 {object} models.Form "Form retrieved successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 404 {object} map[string]interface{} "Form not found or not published"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /forms/slug/{slug} [get]
 func (h *FormHandler) GetPublicForm(c *fiber.Ctx) error {
 	slug := c.Params("slug")
 	if slug == "" {
@@ -117,6 +153,20 @@ func (h *FormHandler) GetPublicForm(c *fiber.Ctx) error {
 }
 
 // UpdateForm updates an existing form
+// @Summary Update form
+// @Description Update an existing form's details
+// @Tags Forms
+// @Accept json
+// @Produce json
+// @Param id path string true "Form ID"
+// @Param form body models.UpdateFormRequest true "Form update data"
+// @Success 200 {object} models.Form "Form updated successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Form not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security BearerAuth
+// @Router /forms/{id} [patch]
 func (h *FormHandler) UpdateForm(c *fiber.Ctx) error {
 	formID := c.Params("id")
 	if formID == "" {
@@ -162,6 +212,19 @@ func (h *FormHandler) UpdateForm(c *fiber.Ctx) error {
 }
 
 // DeleteForm deletes a form
+// @Summary Delete form
+// @Description Delete a form permanently
+// @Tags Forms
+// @Accept json
+// @Produce json
+// @Param id path string true "Form ID"
+// @Success 200 {object} map[string]interface{} "Form deleted successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Form not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security BearerAuth
+// @Router /forms/{id} [delete]
 func (h *FormHandler) DeleteForm(c *fiber.Ctx) error {
 	formID := c.Params("id")
 	if formID == "" {
@@ -192,6 +255,19 @@ func (h *FormHandler) DeleteForm(c *fiber.Ctx) error {
 }
 
 // ListForms lists forms with pagination
+// @Summary List user forms
+// @Description Get paginated list of forms for the authenticated user
+// @Tags Forms
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Items per page" default(10)
+// @Success 200 {object} map[string]interface{} "Forms retrieved successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security BearerAuth
+// @Router /forms [get]
 func (h *FormHandler) ListForms(c *fiber.Ctx) error {
 	// Parse pagination parameters
 	page, _ := strconv.Atoi(c.Query("page", "1"))
@@ -240,6 +316,19 @@ func (h *FormHandler) ListForms(c *fiber.Ctx) error {
 }
 
 // PublishForm publishes a form
+// @Summary Publish form
+// @Description Publish a form to make it accessible via public slug
+// @Tags Forms
+// @Accept json
+// @Produce json
+// @Param id path string true "Form ID"
+// @Success 200 {object} models.Form "Form published successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Form not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security BearerAuth
+// @Router /forms/{id}/publish [post]
 func (h *FormHandler) PublishForm(c *fiber.Ctx) error {
 	formID := c.Params("id")
 	if formID == "" {
@@ -271,6 +360,19 @@ func (h *FormHandler) PublishForm(c *fiber.Ctx) error {
 }
 
 // UnpublishForm unpublishes a form
+// @Summary Unpublish form
+// @Description Unpublish a form to remove public access via slug
+// @Tags Forms
+// @Accept json
+// @Produce json
+// @Param id path string true "Form ID"
+// @Success 200 {object} models.Form "Form unpublished successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Form not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security BearerAuth
+// @Router /forms/{id}/unpublish [post]
 func (h *FormHandler) UnpublishForm(c *fiber.Ctx) error {
 	formID := c.Params("id")
 	if formID == "" {

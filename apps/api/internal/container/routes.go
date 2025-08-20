@@ -10,6 +10,9 @@ import (
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/services"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/monitor"
+	"github.com/gofiber/fiber/v2/middleware/pprof"
+	"github.com/gofiber/swagger"
 )
 
 // setupRoutes configures all application routes
@@ -25,6 +28,14 @@ func setupRoutes(
 	wsManager interfaces.WebSocketManagerInterface,
 ) {
 	// Health check endpoint
+	// @Summary Health check
+	// @Description Check API health status and database connectivity
+	// @Tags System
+	// @Accept json
+	// @Produce json
+	// @Success 200 {object} map[string]interface{} "Service is healthy"
+	// @Failure 503 {object} map[string]interface{} "Service is unhealthy"
+	// @Router /health [get]
 	app.Get("/health", func(c *fiber.Ctx) error {
 		if err := db.HealthCheck(); err != nil {
 			return c.Status(503).JSON(fiber.Map{
@@ -45,21 +56,45 @@ func setupRoutes(
 		})
 	})
 
+	// Configure development tools and port-based routing
+	if cfg.Environment == "development" {
+		setupDevelopmentTools(app)
+		setupPortBasedRouting(app)
+	}
+
 	// API info endpoint
+	// @Summary API information
+	// @Description Get API service information and available endpoints
+	// @Tags System
+	// @Accept json
+	// @Produce json
+	// @Success 200 {object} map[string]interface{} "API information"
+	// @Router / [get]
 	app.Get("/", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
+		response := fiber.Map{
 			"service":     "Dune Form Analytics API",
 			"version":     "1.0.0",
 			"description": "Professional form builder with real-time analytics",
 			"environment": cfg.Environment,
 			"status":      "operational",
+			"timestamp":   time.Now().UTC().Format(time.RFC3339),
 			"endpoints": fiber.Map{
-				"health":    "/health",
-				"api":       "/api",
-				"websocket": "/ws/forms/:id",
-				"docs":      "See README.md for complete API documentation",
+				"health":     "/health",
+				"api":        "/api",
+				"websocket":  "/ws/forms/:id",
 			},
-		})
+		}
+
+		// Add development tools info only in development environment
+		if cfg.Environment == "development" {
+			response["development_tools"] = fiber.Map{
+				"documentation": "/swagger/index.html",
+				"monitoring":    "/monitor",
+				"profiling":     "/debug/pprof",
+			}
+		}
+
+		return c.JSON(response)
 	})
 
 	// API routes group
@@ -102,7 +137,27 @@ func setupRoutes(
 	api.Get("/forms/:id/trends", authMiddleware, analyticsHandler.GetTrendAnalytics)
 
 	// WebSocket routes for real-time analytics
+	// @Summary WebSocket connection
+	// @Description Establish WebSocket connection for real-time form analytics
+	// @Tags WebSocket
+	// @Accept json
+	// @Produce json
+	// @Param id path string true "Form ID"
+	// @Success 101 {string} string "WebSocket connection established"
+	// @Failure 400 {object} map[string]interface{} "Bad request"
+	// @Failure 404 {object} map[string]interface{} "Form not found"
+	// @Router /ws/forms/{id} [get]
 	app.Get("/ws/forms/:id", wsManager.HandleConnection)
+	
+	// @Summary WebSocket statistics
+	// @Description Get WebSocket connection statistics
+	// @Tags WebSocket
+	// @Accept json
+	// @Produce json
+	// @Param formId query string false "Form ID to get room-specific stats"
+	// @Success 200 {object} map[string]interface{} "WebSocket statistics"
+	// @Failure 500 {object} map[string]interface{} "Internal server error"
+	// @Router /ws/stats [get]
 	api.Get("/ws/stats", func(c *fiber.Ctx) error {
 		formID := c.Query("formId")
 
@@ -118,5 +173,41 @@ func setupRoutes(
 			"success": true,
 			"data":    stats,
 		})
+	})
+}
+
+// setupDevelopmentTools configures development-only tools
+func setupDevelopmentTools(app *fiber.App) {
+	// Swagger API documentation
+	app.Get("/swagger/*", swagger.HandlerDefault)
+	
+	// Application monitoring dashboard
+	app.Get("/monitor", monitor.New(monitor.Config{
+		Title: "Dune Form Analytics API Monitor",
+	}))
+	
+	// Go pprof performance profiling
+	app.Use("/debug/pprof", pprof.New())
+}
+
+// setupPortBasedRouting configures Docker Desktop port-based routing
+func setupPortBasedRouting(app *fiber.App) {
+	app.Use(func(c *fiber.Ctx) error {
+		host := c.Get("Host")
+		path := c.Path()
+		
+		// Redirect root requests from specific ports to their respective tools
+		if path == "/" {
+			switch host {
+			case "localhost:8082":
+				return c.Redirect("/swagger/index.html", 302)
+			case "localhost:8083":
+				return c.Redirect("/monitor", 302)
+			case "localhost:8084":
+				return c.Redirect("/debug/pprof/", 302)
+			}
+		}
+		
+		return c.Next()
 	})
 }

@@ -23,6 +23,17 @@ func NewAuthHandler(authService *services.AuthService, validator *validator.Vali
 }
 
 // Signup handles user registration
+// @Summary User registration
+// @Description Register a new user account
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param user body models.CreateUserRequest true "User registration data"
+// @Success 201 {object} models.AuthResponse "User registered successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 409 {object} map[string]interface{} "User already exists"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /auth/signup [post]
 func (h *AuthHandler) Signup(c *fiber.Ctx) error {
 	var req models.CreateUserRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -71,6 +82,17 @@ func (h *AuthHandler) Signup(c *fiber.Ctx) error {
 }
 
 // Login handles user authentication
+// @Summary User login
+// @Description Authenticate user with email and password
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param credentials body models.LoginRequest true "Login credentials"
+// @Success 200 {object} models.AuthResponse "Login successful"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Invalid credentials"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /auth/login [post]
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req models.LoginRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -106,6 +128,17 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 }
 
 // RefreshToken handles token refresh
+// @Summary Refresh JWT token
+// @Description Refresh access token using refresh token
+// @Tags Authentication  
+// @Accept json
+// @Produce json
+// @Param token body models.RefreshTokenRequest true "Refresh token"
+// @Success 200 {object} models.AuthResponse "Token refreshed successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Invalid token"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /auth/refresh [post]
 func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 	var req models.RefreshTokenRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -141,6 +174,17 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 }
 
 // GetMe returns current user information
+// @Summary Get current user
+// @Description Get information about the authenticated user
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Success 200 {object} models.UserResponse "User information retrieved successfully"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "User not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security BearerAuth
+// @Router /auth/me [get]
 func (h *AuthHandler) GetMe(c *fiber.Ctx) error {
 	// Get user ID from context (set by auth middleware)
 	userID := c.Locals("userID")
@@ -168,6 +212,15 @@ func (h *AuthHandler) GetMe(c *fiber.Ctx) error {
 }
 
 // Logout handles user logout (for future token blacklisting)
+// @Summary User logout
+// @Description Log out the authenticated user
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{} "Logged out successfully"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Security BearerAuth
+// @Router /auth/logout [post]
 func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 	// For now, just return success
 	// In the future, we could implement token blacklisting here

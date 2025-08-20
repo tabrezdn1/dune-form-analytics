@@ -27,6 +27,19 @@ func NewAnalyticsHandler(analyticsService interfaces.AnalyticsServiceInterface, 
 }
 
 // GetAnalytics retrieves analytics for a form
+// @Summary Get form analytics
+// @Description Retrieve comprehensive analytics data for a specific form
+// @Tags Analytics
+// @Accept json
+// @Produce json
+// @Param id path string true "Form ID"
+// @Success 200 {object} map[string]interface{} "Analytics retrieved successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Form not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security BearerAuth
+// @Router /forms/{id}/analytics [get]
 func (h *AnalyticsHandler) GetAnalytics(c *fiber.Ctx) error {
 	formID := c.Params("id")
 	if formID == "" {
@@ -57,6 +70,19 @@ func (h *AnalyticsHandler) GetAnalytics(c *fiber.Ctx) error {
 }
 
 // ComputeAnalytics computes analytics for a form
+// @Summary Compute form analytics
+// @Description Trigger computation of analytics data for a specific form
+// @Tags Analytics
+// @Accept json
+// @Produce json
+// @Param id path string true "Form ID"
+// @Success 200 {object} map[string]interface{} "Analytics computed successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Form not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security BearerAuth
+// @Router /forms/{id}/analytics/compute [post]
 func (h *AnalyticsHandler) ComputeAnalytics(c *fiber.Ctx) error {
 	formID := c.Params("id")
 	if formID == "" {
@@ -127,6 +153,19 @@ func (h *AnalyticsHandler) ComputeAnalytics(c *fiber.Ctx) error {
 }
 
 // GetRealTimeMetrics retrieves real-time metrics for a form
+// @Summary Get real-time metrics
+// @Description Retrieve real-time analytics metrics for a specific form
+// @Tags Analytics
+// @Accept json
+// @Produce json
+// @Param id path string true "Form ID"
+// @Success 200 {object} map[string]interface{} "Real-time metrics retrieved successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Form not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security BearerAuth
+// @Router /forms/{id}/metrics [get]
 func (h *AnalyticsHandler) GetRealTimeMetrics(c *fiber.Ctx) error {
 	formID := c.Params("id")
 	if formID == "" {
@@ -157,6 +196,16 @@ func (h *AnalyticsHandler) GetRealTimeMetrics(c *fiber.Ctx) error {
 }
 
 // GetAnalyticsSummary retrieves analytics summary for all forms
+// @Summary Get analytics summary
+// @Description Retrieve analytics summary across all user forms
+// @Tags Analytics
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{} "Analytics summary retrieved successfully"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security BearerAuth
+// @Router /analytics/summary [get]
 func (h *AnalyticsHandler) GetAnalyticsSummary(c *fiber.Ctx) error {
 	// Get owner ID from context (if authenticated)
 	var ownerID *string
@@ -180,6 +229,21 @@ func (h *AnalyticsHandler) GetAnalyticsSummary(c *fiber.Ctx) error {
 }
 
 // GetTrendAnalytics retrieves trend analytics for specific fields
+// @Summary Get trend analytics
+// @Description Retrieve trend analytics data for specific form fields over time
+// @Tags Analytics
+// @Accept json
+// @Produce json
+// @Param id path string true "Form ID"
+// @Param field query string false "Specific field to analyze"
+// @Param period query string false "Time period (7d, 30d, 90d)" default("30d")
+// @Success 200 {object} map[string]interface{} "Trend analytics retrieved successfully"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Form not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Security BearerAuth
+// @Router /forms/{id}/trends [get]
 func (h *AnalyticsHandler) GetTrendAnalytics(c *fiber.Ctx) error {
 	formID := c.Params("id")
 	if formID == "" {

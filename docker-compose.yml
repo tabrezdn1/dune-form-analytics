@@ -6,6 +6,10 @@ services:
     restart: unless-stopped
     ports:
       - "27017:27017"
+    labels:
+      - "dune.service=database"
+      - "dune.description=MongoDB Database"
+      - "dune.port=27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password123
@@ -23,6 +27,10 @@ services:
     restart: unless-stopped
     ports:
       - "8081:8081"
+    labels:
+      - "dune.service=database-ui" 
+      - "dune.description=MongoDB Administration Interface"
+      - "dune.port=8081"
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: admin
       ME_CONFIG_MONGODB_ADMINPASSWORD: password123
@@ -35,7 +43,7 @@ services:
     networks:
       - dune-network
 
-  # Go Fiber API
+  # Go Fiber API with development tools
   api:
     build:
       context: .
@@ -44,7 +52,15 @@ services:
     container_name: dune-api
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8080:8080"   # Main API
+      - "8082:8080"   # Swagger Docs (separate port)
+      - "8083:8080"   # Monitor Dashboard (separate port)  
+      - "8084:8080"   # Performance Profiler (separate port)
+    labels:
+      - "dune.service=api"
+      - "dune.description=Main API with development tools"
+      - "dune.ports=8080,8082,8083,8084"
+      - "dune.dev-tools=swagger,monitor,profiler"
     environment:
       - DUNE_ENVIRONMENT=development
       - DUNE_DATABASE_URI=mongodb://admin:password123@mongo:27017/dune_forms?authSource=admin
@@ -71,6 +87,10 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
+    labels:
+      - "dune.service=frontend"
+      - "dune.description=Next.js React Frontend Application"  
+      - "dune.port=3000"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:

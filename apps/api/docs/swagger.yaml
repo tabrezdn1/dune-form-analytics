@@ -1,0 +1,1216 @@
+basePath: /api
+definitions:
+  models.Answer:
+    properties:
+      fieldId:
+        type: string
+      value: {}
+    required:
+    - fieldId
+    - value
+    type: object
+  models.AuthResponse:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+      user:
+        $ref: '#/definitions/models.UserResponse'
+    type: object
+  models.CreateFormRequest:
+    properties:
+      description:
+        maxLength: 1000
+        type: string
+      fields:
+        items:
+          $ref: '#/definitions/models.Field'
+        maxItems: 50
+        minItems: 1
+        type: array
+      title:
+        maxLength: 200
+        minLength: 1
+        type: string
+    required:
+    - fields
+    - title
+    type: object
+  models.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 50
+        minLength: 2
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  models.Field:
+    properties:
+      id:
+        maxLength: 50
+        minLength: 1
+        type: string
+      label:
+        maxLength: 200
+        minLength: 1
+        type: string
+      options:
+        items:
+          $ref: '#/definitions/models.Option'
+        type: array
+      required:
+        type: boolean
+      type:
+        allOf:
+        - $ref: '#/definitions/models.FieldType'
+        enum:
+        - text
+        - mcq
+        - checkbox
+        - rating
+      validation:
+        $ref: '#/definitions/models.Validation'
+      visibility:
+        $ref: '#/definitions/models.VisibilityCondition'
+    required:
+    - id
+    - label
+    - type
+    type: object
+  models.FieldType:
+    enum:
+    - text
+    - mcq
+    - checkbox
+    - rating
+    type: string
+    x-enum-varnames:
+    - FieldTypeText
+    - FieldTypeMCQ
+    - FieldTypeCheckbox
+    - FieldTypeRating
+  models.Form:
+    properties:
+      _id:
+        type: string
+      createdAt:
+        type: string
+      description:
+        maxLength: 1000
+        type: string
+      fields:
+        items:
+          $ref: '#/definitions/models.Field'
+        maxItems: 50
+        minItems: 1
+        type: array
+      ownerId:
+        type: string
+      shareSlug:
+        maxLength: 50
+        minLength: 3
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/models.FormStatus'
+        enum:
+        - draft
+        - published
+      title:
+        maxLength: 200
+        minLength: 1
+        type: string
+      updatedAt:
+        type: string
+    required:
+    - fields
+    - shareSlug
+    - status
+    - title
+    type: object
+  models.FormResponse:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      fields:
+        items:
+          $ref: '#/definitions/models.Field'
+        type: array
+      id:
+        type: string
+      ownerId:
+        type: string
+      shareSlug:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.FormStatus:
+    enum:
+    - draft
+    - published
+    type: string
+    x-enum-varnames:
+    - FormStatusDraft
+    - FormStatusPublished
+  models.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.Option:
+    properties:
+      id:
+        maxLength: 50
+        minLength: 1
+        type: string
+      label:
+        maxLength: 100
+        minLength: 1
+        type: string
+    required:
+    - id
+    - label
+    type: object
+  models.RefreshTokenRequest:
+    properties:
+      refreshToken:
+        type: string
+    required:
+    - refreshToken
+    type: object
+  models.ResponseMeta:
+    properties:
+      ip:
+        type: string
+      referrer:
+        type: string
+      userAgent:
+        type: string
+    type: object
+  models.SubmitResponseRequest:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/models.Answer'
+        minItems: 1
+        type: array
+      meta:
+        $ref: '#/definitions/models.ResponseMeta'
+    required:
+    - answers
+    type: object
+  models.UpdateFormRequest:
+    properties:
+      description:
+        maxLength: 1000
+        type: string
+      fields:
+        items:
+          $ref: '#/definitions/models.Field'
+        maxItems: 50
+        minItems: 1
+        type: array
+      status:
+        allOf:
+        - $ref: '#/definitions/models.FormStatus'
+        enum:
+        - draft
+        - published
+      title:
+        maxLength: 200
+        minLength: 1
+        type: string
+    type: object
+  models.UserResponse:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.Validation:
+    properties:
+      max:
+        maximum: 10
+        type: integer
+      maxLen:
+        maximum: 10000
+        minimum: 1
+        type: integer
+      min:
+        minimum: 1
+        type: integer
+      minLen:
+        maximum: 1000
+        minimum: 0
+        type: integer
+      pattern:
+        type: string
+    type: object
+  models.VisibilityCondition:
+    properties:
+      op:
+        enum:
+        - eq
+        - ne
+        - in
+        - gt
+        - lt
+        type: string
+      value: {}
+      whenFieldId:
+        type: string
+    required:
+    - op
+    - value
+    - whenFieldId
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: Professional form builder with real-time analytics and comprehensive
+    data insights
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Dune Form Analytics API
+  version: 1.0.0
+paths:
+  /analytics/summary:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve analytics summary across all user forms
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Analytics summary retrieved successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get analytics summary
+      tags:
+      - Analytics
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with email and password
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            $ref: '#/definitions/models.AuthResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Invalid credentials
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User login
+      tags:
+      - Authentication
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Log out the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logged out successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: User logout
+      tags:
+      - Authentication
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Get information about the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User information retrieved successfully
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - Authentication
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refresh access token using refresh token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: token
+        required: true
+        schema:
+          $ref: '#/definitions/models.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token refreshed successfully
+          schema:
+            $ref: '#/definitions/models.AuthResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Invalid token
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Refresh JWT token
+      tags:
+      - Authentication
+  /auth/signup:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user account
+      parameters:
+      - description: User registration data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User registered successfully
+          schema:
+            $ref: '#/definitions/models.AuthResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: User already exists
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User registration
+      tags:
+      - Authentication
+  /forms:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated list of forms for the authenticated user
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Forms retrieved successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List user forms
+      tags:
+      - Forms
+    post:
+      consumes:
+      - application/json
+      description: Create a new form with the provided form data
+      parameters:
+      - description: Form creation data
+        in: body
+        name: form
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateFormRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Form created successfully
+          schema:
+            $ref: '#/definitions/models.FormResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new form
+      tags:
+      - Forms
+  /forms/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a form permanently
+      parameters:
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Form deleted successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete form
+      tags:
+      - Forms
+    get:
+      consumes:
+      - application/json
+      description: Retrieve form details by form ID
+      parameters:
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Form retrieved successfully
+          schema:
+            $ref: '#/definitions/models.Form'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get a form by ID
+      tags:
+      - Forms
+    patch:
+      consumes:
+      - application/json
+      description: Update an existing form's details
+      parameters:
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Form update data
+        in: body
+        name: form
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Form updated successfully
+          schema:
+            $ref: '#/definitions/models.Form'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update form
+      tags:
+      - Forms
+  /forms/{id}/analytics:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve comprehensive analytics data for a specific form
+      parameters:
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Analytics retrieved successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get form analytics
+      tags:
+      - Analytics
+  /forms/{id}/analytics.csv:
+    get:
+      consumes:
+      - application/json
+      description: Export form analytics data as a CSV file
+      parameters:
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - text/csv
+      responses:
+        "200":
+          description: CSV file content
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Export analytics as CSV
+      tags:
+      - Analytics
+  /forms/{id}/analytics/compute:
+    post:
+      consumes:
+      - application/json
+      description: Trigger computation of analytics data for a specific form
+      parameters:
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Analytics computed successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Compute form analytics
+      tags:
+      - Analytics
+  /forms/{id}/export.csv:
+    get:
+      consumes:
+      - application/json
+      description: Export all form responses as a CSV file
+      parameters:
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - text/csv
+      responses:
+        "200":
+          description: CSV file content
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Export responses as CSV
+      tags:
+      - Responses
+  /forms/{id}/metrics:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve real-time analytics metrics for a specific form
+      parameters:
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Real-time metrics retrieved successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get real-time metrics
+      tags:
+      - Analytics
+  /forms/{id}/publish:
+    post:
+      consumes:
+      - application/json
+      description: Publish a form to make it accessible via public slug
+      parameters:
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Form published successfully
+          schema:
+            $ref: '#/definitions/models.Form'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Publish form
+      tags:
+      - Forms
+  /forms/{id}/responses:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve paginated responses for a specific form
+      parameters:
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Responses retrieved successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get form responses
+      tags:
+      - Responses
+  /forms/{id}/submit:
+    post:
+      consumes:
+      - application/json
+      description: Submit a response to a published form
+      parameters:
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Form response data
+        in: body
+        name: response
+        required: true
+        schema:
+          $ref: '#/definitions/models.SubmitResponseRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Response submitted successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Submit form response
+      tags:
+      - Responses
+  /forms/{id}/trends:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve trend analytics data for specific form fields over time
+      parameters:
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Specific field to analyze
+        in: query
+        name: field
+        type: string
+      - default: '"30d"'
+        description: Time period (7d, 30d, 90d)
+        in: query
+        name: period
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Trend analytics retrieved successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get trend analytics
+      tags:
+      - Analytics
+  /forms/{id}/unpublish:
+    post:
+      consumes:
+      - application/json
+      description: Unpublish a form to remove public access via slug
+      parameters:
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Form unpublished successfully
+          schema:
+            $ref: '#/definitions/models.Form'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Unpublish form
+      tags:
+      - Forms
+  /forms/slug/{slug}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a published form using its slug (public access)
+      parameters:
+      - description: Form slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Form retrieved successfully
+          schema:
+            $ref: '#/definitions/models.Form'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Form not found or not published
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get public form by slug
+      tags:
+      - Forms
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
