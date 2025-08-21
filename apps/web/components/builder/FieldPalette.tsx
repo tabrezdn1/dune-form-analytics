@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { FormField } from '@/lib/types'
 
 interface FieldPaletteProps {
@@ -64,6 +64,8 @@ const fieldTypes = [
 ]
 
 export function FieldPalette({ onAddField, className = '' }: FieldPaletteProps) {
+  const [draggedType, setDraggedType] = useState<string | null>(null)
+
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="mb-4">
@@ -71,7 +73,7 @@ export function FieldPalette({ onAddField, className = '' }: FieldPaletteProps) 
           Field Types
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Drag and drop or click to add fields to your form
+          <span className="hidden sm:inline">Drag and drop or </span>Click to add fields to your form
         </p>
       </div>
 
@@ -81,15 +83,22 @@ export function FieldPalette({ onAddField, className = '' }: FieldPaletteProps) 
             key={fieldType.type}
             onClick={() => onAddField(fieldType.type)}
             className={`
-              w-full p-4 rounded-lg border-2 border-dashed transition-all duration-200
-              hover:border-solid hover:shadow-md
+              w-full p-4 rounded-lg border-2 transition-all duration-200
+              hover:shadow-md transform hover:scale-[1.02] active:scale-95
+              touch-manipulation select-none
+              ${draggedType === fieldType.type ? 'opacity-50 scale-95' : ''}
               ${fieldType.borderColor} ${fieldType.bgColor}
               group cursor-pointer
             `}
             draggable
             onDragStart={(e) => {
+              setDraggedType(fieldType.type)
               e.dataTransfer.setData('fieldType', fieldType.type)
+              e.dataTransfer.setData('text/plain', fieldType.type) // Fallback for compatibility
               e.dataTransfer.effectAllowed = 'copy'
+            }}
+            onDragEnd={() => {
+              setDraggedType(null)
             }}
           >
             <div className="flex items-center space-x-3">
@@ -109,8 +118,33 @@ export function FieldPalette({ onAddField, className = '' }: FieldPaletteProps) 
         ))}
       </div>
 
-
-
+      {/* Instructions */}
+      <div className="mt-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center space-x-2">
+          <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>How to use:</span>
+        </h4>
+        <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-2">
+          <li className="flex items-center space-x-2">
+            <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
+            <span><strong>Click</strong> a field type to add it to the end</span>
+          </li>
+          <li className="flex items-center space-x-2">
+            <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
+            <span><strong>Drag</strong> field types to specific positions</span>
+          </li>
+          <li className="flex items-center space-x-2">
+            <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
+            <span><strong>Click</strong> existing fields to edit properties</span>
+          </li>
+          <li className="flex items-center space-x-2">
+            <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
+            <span><strong>Drag</strong> existing fields to reorder them</span>
+          </li>
+        </ul>
+      </div>
     </div>
   )
 }

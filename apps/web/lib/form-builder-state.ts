@@ -314,7 +314,11 @@ export function useFormBuilder(initialForm?: {
   }, [state.fields, state.selectedFieldId])
 
   const canSave = useCallback(() => {
-    return state.title.trim() !== '' && state.fields.length > 0 && Object.keys(state.errors).length === 0
+    const hasTitle = state.title.trim() !== ''
+    const hasFields = state.fields.length > 0
+    const hasNoErrors = Object.keys(state.errors).length === 0
+    
+    return hasTitle && hasFields && hasNoErrors
   }, [state.title, state.fields, state.errors])
 
   const validateForm = useCallback(() => {
