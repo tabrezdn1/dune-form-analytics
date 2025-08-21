@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import { Header } from '@/components/navigation/Header'
+import { RouteProgressBar } from '@/components/ui/RouteProgressBar'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -23,6 +24,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <Providers>
+          <RouteProgressBar />
           <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <Header />
             {children}

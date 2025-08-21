@@ -445,5 +445,5 @@ db.forms.find().forEach(function(form) {
 
 **Next Steps:**
 - Review [Sequence Diagrams](sequences/) for data flow patterns
-- Explore [Backend Database Implementation](../backend/database.md) for technical details
+- Explore [Backend Overview](../backend/overview.md#data-access-patterns) for technical details
 - Check [API Documentation](../backend/api-rest.md) for data access patterns

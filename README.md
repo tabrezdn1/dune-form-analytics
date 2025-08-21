@@ -115,16 +115,16 @@ flowchart TB
 
 **Links for nodes:**
 - **Next.js Application** → [docs/frontend/overview.md](docs/frontend/overview.md)
-- **Form Builder** → [docs/frontend/components.md#form-builder](docs/frontend/components.md#form-builder)
-- **Analytics Dashboard** → [docs/frontend/components.md#analytics-dashboard](docs/frontend/components.md#analytics-dashboard)
+- **Form Builder** → [docs/frontend/overview.md#form-builder](docs/frontend/overview.md#form-builder)
+- **Analytics Dashboard** → [docs/frontend/overview.md#analytics-dashboard](docs/frontend/overview.md#analytics-dashboard)
 - **Go Fiber API** → [docs/backend/overview.md](docs/backend/overview.md)
 - **WebSocket Manager** → [docs/backend/websockets.md](docs/backend/websockets.md)
-- **Form Service** → [docs/backend/services.md#form-service](docs/backend/services.md#form-service)
-- **Response Service** → [docs/backend/services.md#response-service](docs/backend/services.md#response-service)
-- **Analytics Service** → [docs/backend/services.md#analytics-service](docs/backend/services.md#analytics-service)
-- **Auth Service** → [docs/backend/services.md#auth-service](docs/backend/services.md#auth-service)
-- **MongoDB** → [docs/backend/database.md](docs/backend/database.md)
-- **Development Tools** → [docs/devops/local-development.md](docs/devops/runbooks/local-development.md)
+- **Form Service** → [docs/backend/overview.md#service-layer-architecture](docs/backend/overview.md#service-layer-architecture)
+- **Response Service** → [docs/backend/overview.md#service-layer-architecture](docs/backend/overview.md#service-layer-architecture)
+- **Analytics Service** → [docs/backend/overview.md#service-layer-architecture](docs/backend/overview.md#service-layer-architecture)
+- **Auth Service** → [docs/backend/overview.md#authentication--authorization](docs/backend/overview.md#authentication--authorization)
+- **MongoDB** → [docs/architecture/data-model.md](docs/architecture/data-model.md)
+- **Development Tools** → [docs/backend/overview.md#development-tools-integration](docs/backend/overview.md#development-tools-integration)
 
 ## Features
 

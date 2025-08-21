@@ -412,12 +412,9 @@ make shell-mongo  # Open MongoDB shell
 
 - [API Documentation](http://localhost:8080/swagger/index.html)
 - [Architecture Overview](docs/architecture/overview.md)
-- [Component Documentation](docs/frontend/components.md)
+- [Frontend Overview](docs/frontend/overview.md)
 - [Database Schema](docs/architecture/data-model.md)
 
-## 🤝 Code of Conduct
-
-We are committed to providing a welcoming and inclusive environment. Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before participating.
 
 ## 📞 Getting Help
 
@@ -428,7 +425,7 @@ We are committed to providing a welcoming and inclusive environment. Please read
 ## 🎉 Recognition
 
 Contributors will be recognized in:
-- [Contributors section](README.md#contributors)
+
 - Release notes for significant contributions
 - Special mentions for exceptional contributions
 

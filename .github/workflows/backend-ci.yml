@@ -1,11 +1,7 @@
 name: Backend
 
 on:
-  pull_request:
-    branches: [ main, develop ]
-    paths:
-      - 'apps/api/**'
-      - '.github/workflows/backend-ci.yml'
+  workflow_call:
 
 jobs:
   format:

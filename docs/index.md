@@ -28,8 +28,8 @@ This documentation provides complete coverage of the Dune Forms platform, from h
 - **[Glossary](../glossary.md)** - Technical terms and definitions
 - **[Code Coverage](coverage.md)** - Mapping of code files to documentation
 - **[Changelog](../CHANGELOG.md)** - Version history and release notes
-- **[Future Enhancements](FUTURE_ENHANCEMENTS.md)** - Roadmap and planned features
-- **[Dependency Analysis](UNUSED_DEPENDENCIES.md)** - Accurate usage analysis of all dependencies
+
+
 
 ## 🚀 Quick Start
 

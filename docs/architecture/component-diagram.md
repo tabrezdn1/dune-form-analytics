@@ -385,7 +385,7 @@ flowchart TB
 - **Analytics Service** → [Backend Overview](../backend/overview.md#service-layer-architecture)
 - **Auth Service** → [Backend Overview](../backend/overview.md#service-layer-architecture)
 - **MongoDB** → [Data Model](data-model.md)
-- **Development Tools** → [README](../../README.md#development-tools)
+- **Development Tools** → [README](../../README.md#tech-stack)
 
 ---
 

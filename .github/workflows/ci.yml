@@ -1,6 +1,11 @@
 name: CI
 
 on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/**'
   pull_request:
     branches: [ main, develop ]
     paths:
