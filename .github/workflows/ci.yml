@@ -1,0 +1,13 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/**'
+
+jobs:
+  backend:
+    name: Backend
+    uses: ./.github/workflows/backend-ci.yml

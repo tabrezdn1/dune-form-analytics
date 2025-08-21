@@ -306,7 +306,7 @@ func (s *AnalyticsService) computeAnalyticsFromResponses(fields []models.Field, 
 	for fieldID, values := range ratingValues {
 		if len(values) > 0 {
 			fieldAnalytics := analytics.ByField[fieldID]
-			
+
 			// Calculate average
 			sum := 0.0
 			for _, val := range values {
@@ -449,11 +449,11 @@ func (s *AnalyticsService) GetAnalyticsSummary(ctx context.Context, ownerID *str
 			CompletionRate: 1.0, // Simplified - would need more complex calculation
 		}
 
-			// Get last response time
-	var lastResponse models.Response
-	err = s.collections.Responses.FindOne(ctx, bson.M{"formId": form.ID}, &options.FindOneOptions{
-		Sort: bson.M{"submittedAt": -1},
-	}).Decode(&lastResponse)
+		// Get last response time
+		var lastResponse models.Response
+		err = s.collections.Responses.FindOne(ctx, bson.M{"formId": form.ID}, &options.FindOneOptions{
+			Sort: bson.M{"submittedAt": -1},
+		}).Decode(&lastResponse)
 		if err == nil {
 			summary.LastResponse = &lastResponse.SubmittedAt
 		}
@@ -489,7 +489,7 @@ func (s *AnalyticsService) GetTrendAnalytics(ctx context.Context, formID string,
 	// Calculate date range based on period
 	endDate := time.Now()
 	var startDate time.Time
-	
+
 	switch period {
 	case "day":
 		startDate = endDate.AddDate(0, 0, -1)
@@ -542,7 +542,7 @@ func (s *AnalyticsService) GetTrendAnalytics(ctx context.Context, formID string,
 		if !ok {
 			continue
 		}
-		
+
 		count, ok := result["count"].(int32)
 		if !ok {
 			continue

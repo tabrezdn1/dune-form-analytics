@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
+	validator "github.com/go-playground/validator/v10"
+	fiber "github.com/gofiber/fiber/v2"
 
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/models"
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/services"
@@ -39,7 +39,7 @@ func (h *AuthHandler) Signup(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{
 
-			"error":   "Invalid request body",
+			"error": "Invalid request body",
 		})
 	}
 
@@ -57,7 +57,7 @@ func (h *AuthHandler) Signup(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(409).JSON(fiber.Map{
 
-			"error":   err.Error(),
+			"error": err.Error(),
 		})
 	}
 
@@ -66,7 +66,7 @@ func (h *AuthHandler) Signup(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 
-			"error":   "Failed to generate authentication tokens",
+			"error": "Failed to generate authentication tokens",
 		})
 	}
 
@@ -98,7 +98,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{
 
-			"error":   "Invalid request body",
+			"error": "Invalid request body",
 		})
 	}
 
@@ -116,7 +116,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(401).JSON(fiber.Map{
 
-			"error":   err.Error(),
+			"error": err.Error(),
 		})
 	}
 
@@ -130,7 +130,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 // RefreshToken handles token refresh
 // @Summary Refresh JWT token
 // @Description Refresh access token using refresh token
-// @Tags Authentication  
+// @Tags Authentication
 // @Accept json
 // @Produce json
 // @Param token body models.RefreshTokenRequest true "Refresh token"
@@ -144,7 +144,7 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{
 
-			"error":   "Invalid request body",
+			"error": "Invalid request body",
 		})
 	}
 
@@ -162,7 +162,7 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(401).JSON(fiber.Map{
 
-			"error":   err.Error(),
+			"error": err.Error(),
 		})
 	}
 
@@ -191,7 +191,7 @@ func (h *AuthHandler) GetMe(c *fiber.Ctx) error {
 	if userID == nil {
 		return c.Status(401).JSON(fiber.Map{
 
-			"error":   "User not authenticated",
+			"error": "User not authenticated",
 		})
 	}
 
@@ -200,7 +200,7 @@ func (h *AuthHandler) GetMe(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(404).JSON(fiber.Map{
 
-			"error":   err.Error(),
+			"error": err.Error(),
 		})
 	}
 

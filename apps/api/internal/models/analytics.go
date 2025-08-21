@@ -8,12 +8,12 @@ import (
 
 // FieldAnalytics represents analytics data for a single field
 type FieldAnalytics struct {
-	Count        int                    `json:"count" bson:"count"`
-	Distribution map[string]int         `json:"distribution,omitempty" bson:"distribution,omitempty"`
-	Average      *float64               `json:"average,omitempty" bson:"average,omitempty"`
-	Median       *float64               `json:"median,omitempty" bson:"median,omitempty"`
-	Trend        []TrendPoint           `json:"trend,omitempty" bson:"trend,omitempty"`
-	TopKeywords  []KeywordCount         `json:"topKeywords,omitempty" bson:"topKeywords,omitempty"`
+	Count        int            `json:"count" bson:"count"`
+	Distribution map[string]int `json:"distribution,omitempty" bson:"distribution,omitempty"`
+	Average      *float64       `json:"average,omitempty" bson:"average,omitempty"`
+	Median       *float64       `json:"median,omitempty" bson:"median,omitempty"`
+	Trend        []TrendPoint   `json:"trend,omitempty" bson:"trend,omitempty"`
+	TopKeywords  []KeywordCount `json:"topKeywords,omitempty" bson:"topKeywords,omitempty"`
 }
 
 // TrendPoint represents a single point in a trend analysis
@@ -79,10 +79,10 @@ func NewAnalyticsUpdate(formID string, analytics map[string]FieldAnalytics) *Ana
 
 // AnalyticsSummary represents a summary of analytics for dashboard overview
 type AnalyticsSummary struct {
-	FormID         string  `json:"formId"`
-	FormTitle      string  `json:"formTitle"`
-	TotalResponses int     `json:"totalResponses"`
-	CompletionRate float64 `json:"completionRate"`
+	FormID         string     `json:"formId"`
+	FormTitle      string     `json:"formTitle"`
+	TotalResponses int        `json:"totalResponses"`
+	CompletionRate float64    `json:"completionRate"`
 	LastResponse   *time.Time `json:"lastResponse,omitempty"`
 }
 
@@ -96,12 +96,12 @@ type RealTimeMetrics struct {
 
 // TrendAnalytics represents trend analytics for a form over time
 type TrendAnalytics struct {
-	FormID     string       `json:"formId"`
-	Period     string       `json:"period"`
-	TrendData  []TrendPoint `json:"trendData"`
-	StartDate  time.Time    `json:"startDate"`
-	EndDate    time.Time    `json:"endDate"`
-	UpdatedAt  time.Time    `json:"updatedAt"`
+	FormID    string       `json:"formId"`
+	Period    string       `json:"period"`
+	TrendData []TrendPoint `json:"trendData"`
+	StartDate time.Time    `json:"startDate"`
+	EndDate   time.Time    `json:"endDate"`
+	UpdatedAt time.Time    `json:"updatedAt"`
 }
 
 // AggregationResult represents the result of a MongoDB aggregation pipeline
@@ -122,12 +122,12 @@ type AnalyticsComputeRequest struct {
 // InitializeAnalytics creates initial analytics structure for a new form
 func InitializeAnalytics(formID primitive.ObjectID, fields []Field) *Analytics {
 	byField := make(map[string]FieldAnalytics)
-	
+
 	for _, field := range fields {
 		analytics := FieldAnalytics{
 			Count: 0,
 		}
-		
+
 		// Initialize distribution for MCQ and Checkbox fields
 		if field.Type == FieldTypeMCQ || field.Type == FieldTypeCheckbox {
 			analytics.Distribution = make(map[string]int)
@@ -135,10 +135,10 @@ func InitializeAnalytics(formID primitive.ObjectID, fields []Field) *Analytics {
 				analytics.Distribution[option.ID] = 0
 			}
 		}
-		
+
 		byField[field.ID] = analytics
 	}
-	
+
 	return &Analytics{
 		ID:             formID,
 		ByField:        byField,

@@ -62,10 +62,10 @@ type ValidationError struct {
 
 // SubmitResponseResponse represents the response after submitting a form
 type SubmitResponseResponse struct {
-	Success bool               `json:"success"`
-	ID      *string            `json:"id,omitempty"`
-	Errors  []ValidationError  `json:"errors,omitempty"`
-	Message string             `json:"message"`
+	Success bool              `json:"success"`
+	ID      *string           `json:"id,omitempty"`
+	Errors  []ValidationError `json:"errors,omitempty"`
+	Message string            `json:"message"`
 }
 
 // ExportFormat represents the format for exporting responses

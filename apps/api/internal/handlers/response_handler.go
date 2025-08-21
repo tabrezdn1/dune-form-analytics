@@ -13,8 +13,8 @@ import (
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/models"
 	"github.com/tabrezdn1/dune-form-analytics/api/pkg/utils"
 
-	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
+	validator "github.com/go-playground/validator/v10"
+	fiber "github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -261,12 +261,12 @@ func (h *ResponseHandler) ExportCSV(c *fiber.Ctx) error {
 	// Write CSV header
 	headers := []string{"Response ID", "Submitted At"}
 	fieldMap := make(map[string]string)
-	
+
 	for _, field := range form.Fields {
 		headers = append(headers, field.Label)
 		fieldMap[field.ID] = field.Label
 	}
-	
+
 	if err := writer.Write(headers); err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to write CSV headers",
@@ -372,10 +372,10 @@ func (h *ResponseHandler) ExportAnalyticsCSV(c *fiber.Ctx) error {
 	writer.Write([]string{"FIELD-BY-FIELD ANALYTICS"})
 	writer.Write([]string{""})
 	writer.Write([]string{
-		"Field Name", 
-		"Field Type", 
-		"Required", 
-		"Total Responses", 
+		"Field Name",
+		"Field Type",
+		"Required",
+		"Total Responses",
 		"Response Rate (%)",
 		"Skip Count",
 		"Skip Rate (%)",
@@ -387,7 +387,7 @@ func (h *ResponseHandler) ExportAnalyticsCSV(c *fiber.Ctx) error {
 		responseRate := float64(0)
 		skipCount := 0
 		skipRate := float64(0)
-		
+
 		if analytics.TotalResponses > 0 {
 			responseRate = (float64(fieldAnalytics.Count) / float64(analytics.TotalResponses)) * 100
 			skipCount = analytics.TotalResponses - fieldAnalytics.Count
@@ -411,14 +411,14 @@ func (h *ResponseHandler) ExportAnalyticsCSV(c *fiber.Ctx) error {
 	// Write Distribution Data for MCQ/Checkbox fields
 	writer.Write([]string{"RESPONSE DISTRIBUTION"})
 	writer.Write([]string{""})
-	
+
 	for _, field := range form.Fields {
 		if field.Type == "mcq" || field.Type == "checkbox" {
 			fieldAnalytics := analytics.ByField[field.ID]
 			if fieldAnalytics.Distribution != nil && len(fieldAnalytics.Distribution) > 0 {
 				writer.Write([]string{fmt.Sprintf("%s (Distribution)", field.Label)})
 				writer.Write([]string{"Option", "Count", "Percentage"})
-				
+
 				for option, count := range fieldAnalytics.Distribution {
 					percentage := float64(0)
 					if fieldAnalytics.Count > 0 {
@@ -439,7 +439,7 @@ func (h *ResponseHandler) ExportAnalyticsCSV(c *fiber.Ctx) error {
 	writer.Write([]string{"RATING FIELDS"})
 	writer.Write([]string{""})
 	writer.Write([]string{"Field Name", "Average Rating", "Response Count"})
-	
+
 	for _, field := range form.Fields {
 		if field.Type == "rating" {
 			fieldAnalytics := analytics.ByField[field.ID]
@@ -500,11 +500,11 @@ func (h *ResponseHandler) updateAnalyticsAndBroadcast(formID string, response *m
 
 	// Broadcast analytics update via WebSocket
 	analyticsData := map[string]interface{}{
-		"byField": analytics.ByField,
+		"byField":        analytics.ByField,
 		"totalResponses": analytics.TotalResponses,
-		"updatedAt": analytics.UpdatedAt,
+		"updatedAt":      analytics.UpdatedAt,
 	}
-	
+
 	// Broadcast analytics update via WebSocket
 	h.wsManager.Broadcast(formID, "analytics:update", analyticsData)
 }

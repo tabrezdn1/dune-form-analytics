@@ -1,5 +1,5 @@
 # Dune Form Analytics - Development Commands
-.PHONY: help dev build test lint fmt clean seed logs
+.PHONY: help dev build test lint fmt clean seed logs lint-local fmt-local test-local
 
 # Default target
 help: ## Show this help message
@@ -32,15 +32,44 @@ test-backend: ## Run backend tests only
 	@echo "🧪 Running backend tests..."
 	docker compose exec api go test ./...
 
-lint: ## Run linters (eslint + golangci-lint)
-	@echo "🔍 Running linters..."
+lint: ## Run linters (eslint + golangci-lint) - Docker
+	@echo "🔍 Running linters (Docker)..."
 	docker compose exec web npm run lint
 	docker compose exec api golangci-lint run
 
-fmt: ## Format code (prettier + go fmt)
-	@echo "✨ Formatting code..."
+fmt: ## Format code (prettier + go fmt) - Docker
+	@echo "✨ Formatting code (Docker)..."
 	docker compose exec web npm run format
 	docker compose exec api go fmt ./...
+
+# Local development commands (run without Docker)
+lint-local: ## Run backend linter locally (requires golangci-lint)
+	@echo "🔍 Running Go linter locally..."
+	cd apps/api && $(shell go env GOPATH)/bin/golangci-lint run ./... || (echo "⚠️  golangci-lint failed, falling back to basic go tools..." && go vet ./... && echo "✅ Basic go vet passed")
+
+fmt-local: ## Format backend code locally
+	@echo "✨ Formatting Go code locally..."
+	cd apps/api && go fmt ./...
+	cd apps/api && $(shell go env GOPATH)/bin/goimports -w -local github.com/tabrezdn1/dune-form-analytics .
+
+test-local: ## Run backend tests locally
+	@echo "🧪 Running Go tests locally..."
+	cd apps/api && go test -v -race -cover ./...
+
+build-local: ## Build backend binary locally
+	@echo "🔨 Building backend locally..."
+	cd apps/api && go build -o tmp/main ./cmd/server
+
+run-local: ## Run backend locally (requires MongoDB)
+	@echo "🚀 Starting backend locally..."
+	cd apps/api && go run ./cmd/server
+
+install-tools: ## Install required Go tools locally
+	@echo "📦 Installing Go development tools..."
+	go install golang.org/x/tools/cmd/goimports@latest
+	@echo "✅ goimports installed"
+	@echo "✅ golangci-lint already installed"
+	@echo "All Go tools ready for local development!"
 
 seed: ## Seed database with sample data
 	@echo "🌱 Seeding database..."

@@ -26,9 +26,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/tabrezdn1/dune-form-analytics/api/internal/container"
 	"github.com/joho/godotenv"
+
 	_ "github.com/tabrezdn1/dune-form-analytics/api/docs"
+	"github.com/tabrezdn1/dune-form-analytics/api/internal/container"
 )
 
 func main() {
@@ -46,7 +47,7 @@ func main() {
 
 	// Create and start the application using dependency injection
 	app := container.NewContainer()
-	
+
 	// Run the application
 	if err := app.Start(context.Background()); err != nil {
 		log.Fatalf("ERROR: Failed to start application: %v", err)
@@ -56,5 +57,3 @@ func main() {
 	<-app.Done()
 	log.Println("INFO: Application stopped")
 }
-
-

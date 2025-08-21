@@ -3,7 +3,7 @@ package middleware
 import (
 	"log"
 
-	"github.com/gofiber/fiber/v2"
+	fiber "github.com/gofiber/fiber/v2"
 )
 
 // ErrorHandler is a custom error handler for Fiber

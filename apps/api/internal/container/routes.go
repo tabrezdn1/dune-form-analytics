@@ -9,7 +9,7 @@ import (
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/middleware"
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/services"
 
-	"github.com/gofiber/fiber/v2"
+	fiber "github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/gofiber/fiber/v2/middleware/pprof"
 	"github.com/gofiber/swagger"
@@ -79,9 +79,9 @@ func setupRoutes(
 			"status":      "operational",
 			"timestamp":   time.Now().UTC().Format(time.RFC3339),
 			"endpoints": fiber.Map{
-				"health":     "/health",
-				"api":        "/api",
-				"websocket":  "/ws/forms/:id",
+				"health":    "/health",
+				"api":       "/api",
+				"websocket": "/ws/forms/:id",
 			},
 		}
 
@@ -148,7 +148,7 @@ func setupRoutes(
 	// @Failure 404 {object} map[string]interface{} "Form not found"
 	// @Router /ws/forms/{id} [get]
 	app.Get("/ws/forms/:id", wsManager.HandleConnection)
-	
+
 	// @Summary WebSocket statistics
 	// @Description Get WebSocket connection statistics
 	// @Tags WebSocket
@@ -180,12 +180,12 @@ func setupRoutes(
 func setupDevelopmentTools(app *fiber.App) {
 	// Swagger API documentation
 	app.Get("/swagger/*", swagger.HandlerDefault)
-	
+
 	// Application monitoring dashboard
 	app.Get("/monitor", monitor.New(monitor.Config{
 		Title: "Dune Form Analytics API Monitor",
 	}))
-	
+
 	// Go pprof performance profiling
 	app.Use("/debug/pprof", pprof.New())
 }
@@ -195,7 +195,7 @@ func setupPortBasedRouting(app *fiber.App) {
 	app.Use(func(c *fiber.Ctx) error {
 		host := c.Get("Host")
 		path := c.Path()
-		
+
 		// Redirect root requests from specific ports to their respective tools
 		if path == "/" {
 			switch host {
@@ -207,7 +207,7 @@ func setupPortBasedRouting(app *fiber.App) {
 				return c.Redirect("/debug/pprof/", 302)
 			}
 		}
-		
+
 		return c.Next()
 	})
 }

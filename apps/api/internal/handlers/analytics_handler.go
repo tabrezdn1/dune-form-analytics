@@ -8,8 +8,8 @@ import (
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/models"
 	"github.com/tabrezdn1/dune-form-analytics/api/pkg/utils"
 
-	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
+	validator "github.com/go-playground/validator/v10"
+	fiber "github.com/gofiber/fiber/v2"
 )
 
 // AnalyticsHandler handles analytics-related HTTP requests
@@ -303,7 +303,7 @@ func (h *AnalyticsHandler) GetTrendAnalytics(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"success": true,
 		"data": fiber.Map{
-			"fieldId":    fieldID,
+			"fieldId": fieldID,
 			"dateRange": fiber.Map{
 				"start": startDate.Format("2006-01-02"),
 				"end":   endDate.Format("2006-01-02"),

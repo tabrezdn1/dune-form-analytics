@@ -7,8 +7,8 @@ import (
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/models"
 	"github.com/tabrezdn1/dune-form-analytics/api/pkg/utils"
 
-	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
+	validator "github.com/go-playground/validator/v10"
+	fiber "github.com/gofiber/fiber/v2"
 )
 
 // FormHandler handles form-related HTTP requests

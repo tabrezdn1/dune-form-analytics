@@ -1,0 +1,150 @@
+# golangci-lint configuration for Dune Form Analytics API
+# https://golangci-lint.run/usage/configuration/
+
+run:
+  timeout: 5m
+  go: "1.23"
+  tests: true
+
+output:
+  formats:
+    - format: colored-line-number
+      path: stdout
+  print-issued-lines: true
+  print-linter-name: true
+  uniq-by-line: true
+
+linters-settings:
+  # Cyclomatic complexity
+  cyclop:
+    max-complexity: 15
+    package-average: 10.0
+    skip-tests: true
+
+  # Duplication detector
+  dupl:
+    threshold: 100
+
+  # Error return checks
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+    exclude-functions:
+      - fmt:.*
+      - io/ioutil:^Read.*
+
+  # Function length
+  funlen:
+    lines: 80
+    statements: 50
+
+  # Cognitive complexity
+  gocognit:
+    min-complexity: 15
+
+  # Cyclomatic complexity
+  gocyclo:
+    min-complexity: 15
+
+  # Imports formatting
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/tabrezdn1/dune-form-analytics)
+    skip-generated: true
+
+  # Imports formatting
+  goimports:
+    local-prefixes: github.com/tabrezdn1/dune-form-analytics
+
+  # Maximum line length
+  lll:
+    line-length: 120
+    tab-width: 4
+
+  # Naming conventions
+  revive:
+    severity: warning
+    rules:
+      - name: exported
+      - name: package-comments
+      - name: var-naming
+      - name: function-naming
+      - name: indent-error-flow
+      - name: if-return
+      - name: superfluous-else
+      - name: unused-parameter
+      - name: unreachable-code
+      - name: redefines-builtin-id
+
+  # Unused code
+  unused:
+    check-exported: false
+
+  # Variable assignments
+  varcheck:
+    exported-fields: false
+
+  # Struct tags
+  tagliatelle:
+    case:
+      rules:
+        json: snake
+        yaml: snake
+        xml: snake
+        bson: snake
+        env: upper
+        envconfig: upper
+
+linters:
+  disable-all: true
+  enable:
+    # Minimal essential linters:
+    - gofmt         # Check go formatting
+    - vet           # Go vet (renamed from govet)
+    - errcheck      # Check for unchecked errors
+
+issues:
+  exclude-dirs:
+    - tmp
+    - vendor
+    - testdata
+    - docs
+    - cmd/seed  # Exclude any seed commands
+  exclude-files:
+    - ".*_test.go$"
+    - "docs.go"
+    - "docs/.*"
+    - ".*swagger.*"
+  exclude-rules:
+    # Exclude some linters from running on tests files
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+        - funlen
+        
+    # Exclude swagger docs from most checks
+    - path: docs/docs\.go
+      linters:
+        - lll
+        - gochecknoinits
+        - gochecknoglobals
+        
+    # Exclude main.go from some checks
+    - path: cmd/server/main\.go
+      linters:
+        - gochecknoinits
+        - gochecknoglobals
+
+  fix: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  new: false
+
+severity:
+  default-severity: error
+  case-sensitive: false

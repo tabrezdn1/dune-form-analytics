@@ -11,8 +11,8 @@ import (
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/realtime"
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/services"
 
-	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
+	validator "github.com/go-playground/validator/v10"
+	fiber "github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -21,12 +21,12 @@ import (
 
 // Container holds all application dependencies
 type Container struct {
-	Config     *config.Config
-	Database   interfaces.DatabaseInterface
-	Services   *ServiceContainer
-	Handlers   *HandlerContainer
-	WSManager  interfaces.WebSocketManagerInterface
-	App        *fiber.App
+	Config    *config.Config
+	Database  interfaces.DatabaseInterface
+	Services  *ServiceContainer
+	Handlers  *HandlerContainer
+	WSManager interfaces.WebSocketManagerInterface
+	App       *fiber.App
 }
 
 // ServiceContainer holds all service interfaces
@@ -75,7 +75,7 @@ func NewContainer() *fx.App {
 
 		// Start the application
 		fx.Invoke(StartServer),
-		
+
 		// Explicitly invoke auth handler creation to ensure it's created
 		fx.Invoke(func(*handlers.AuthHandler) {}),
 	)

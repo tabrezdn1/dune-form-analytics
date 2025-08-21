@@ -14,9 +14,9 @@ type DatabaseConfig struct {
 
 // ServerConfig holds server configuration
 type ServerConfig struct {
-	Port       string `mapstructure:"port" validate:"required"`
-	AppName    string `mapstructure:"app_name" validate:"required"`
-	BodyLimit  int    `mapstructure:"body_limit" validate:"min=1"`
+	Port      string `mapstructure:"port" validate:"required"`
+	AppName   string `mapstructure:"app_name" validate:"required"`
+	BodyLimit int    `mapstructure:"body_limit" validate:"min=1"`
 }
 
 // CORSConfig holds CORS configuration

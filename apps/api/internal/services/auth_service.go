@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
+	jwt "github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/database"
 	"github.com/tabrezdn1/dune-form-analytics/api/internal/models"
@@ -38,7 +38,7 @@ func NewAuthService(collections *database.Collections, accessSecret, refreshSecr
 		collections:   collections,
 		accessSecret:  accessSecret,
 		refreshSecret: refreshSecret,
-		accessTTL:     60 * time.Minute, // 60 minutes for access token
+		accessTTL:     60 * time.Minute,   // 60 minutes for access token
 		refreshTTL:    7 * 24 * time.Hour, // 7 days for refresh token
 	}
 }
