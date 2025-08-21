@@ -857,7 +857,7 @@ Accept: application/json; version=1
 ---
 
 **Testing the API:**
-- **Interactive Documentation**: http://localhost:8080/swagger/index.html
+- **Interactive Documentation**: http://localhost:8082/swagger/index.html
 - **Health Check**: http://localhost:8080/health
 - **Postman Collection**: Available in repository `/docs/postman/`
 

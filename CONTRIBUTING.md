@@ -38,7 +38,7 @@ Before you begin, ensure you have the following installed:
 **Development URLs:**
 - Frontend: http://localhost:3000
 - API: http://localhost:8080
-- API Documentation: http://localhost:8080/swagger/index.html
+- API Documentation: http://localhost:8082/swagger/index.html
 - Database UI: http://localhost:8081
 
 ## 📋 How to Contribute
@@ -410,7 +410,7 @@ make shell-mongo  # Open MongoDB shell
 
 ### Useful Links
 
-- [API Documentation](http://localhost:8080/swagger/index.html)
+- [API Documentation](http://localhost:8082/swagger/index.html)
 - [Architecture Overview](docs/architecture/overview.md)
 - [Frontend Overview](docs/frontend/overview.md)
 - [Database Schema](docs/architecture/data-model.md)

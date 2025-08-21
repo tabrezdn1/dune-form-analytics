@@ -151,21 +151,21 @@ urls: ## Display all service URLs
 	@echo "Dune Form Analytics - Service URLs:"
 	@echo "=================================="
 	@echo "Frontend:          http://localhost:3000"
-	@echo "API:              http://localhost:8080"
-	@echo "API Health:       http://localhost:8080/health"
+	@echo "API:               http://localhost:8080"
+	@echo "API Health:        http://localhost:8080/health"
 	@echo ""
 	@echo "Development Tools:"
-	@echo "API Docs:         http://localhost:8080/swagger/index.html"
-	@echo "API Monitor:      http://localhost:8080/monitor"
-	@echo "API Profiler:     http://localhost:8080/debug/pprof"
+	@echo "API Documentation: http://localhost:8082/swagger/index.html"
+	@echo "Performance Monitor: http://localhost:8083/monitor"
+	@echo "Go Profiling:      http://localhost:8084/debug/pprof"
 	@echo ""
-	@echo "Database UI:      http://localhost:8081"
+	@echo "Database UI:       http://localhost:8081 (admin/admin123)"
 	
 	@echo ""
 	@echo "Docker Desktop Users:"
 	@echo "   - Click port 8082 for API Documentation"
 	@echo "   - Click port 8083 for Performance Monitor"
-	@echo "   - Click port 8084 for Performance Profiler"
+	@echo "   - Click port 8084 for Go Profiling"
 
 # Development shortcuts
 up: dev ## Alias for dev

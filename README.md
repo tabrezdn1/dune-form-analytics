@@ -21,19 +21,18 @@ Dune Forms is a form creation and analytics platform that enables users to build
 
 ## Live Demo
 
-🚀 **Live Demo Video**
+🚀 **[📹 Watch Full Demo Video](https://drive.google.com/file/d/1oXj1Ejf_3iE8C-Lh4xrJIMNmPWKM4yoo/view)**
 
-<div align="center">
-  <iframe 
-    src="https://drive.google.com/file/d/1oXj1Ejf_3iE8C-Lh4xrJIMNmPWKM4yoo/preview" 
-    width="640" 
-    height="360" 
-    frameborder="0" 
-    allowfullscreen>
-  </iframe>
-</div>
+> **📺 Demo Video**: Click above to watch the complete walkthrough showing form building, real-time analytics, and all key features in action
 
-> **📺 Full Video**: [Watch on Google Drive](https://drive.google.com/file/d/1oXj1Ejf_3iE8C-Lh4xrJIMNmPWKM4yoo/view) if the embedded player doesn't work
+### 🎯 Demo Highlights
+
+- **🛠️ Drag & Drop Form Builder** - Visual form creation with live preview
+- **📊 Real-Time Analytics** - Watch data update instantly as responses come in  
+- **🔗 Public Form Sharing** - Generate shareable links for form distribution
+- **📱 Mobile Responsive** - Works seamlessly across all devices
+- **🌙 Dark Mode** - Toggle between light and dark themes
+- **📈 Data Export** - CSV and PDF export functionality
 
 ### Quick Demo Walkthrough
 
@@ -113,9 +112,9 @@ flowchart TB
     end
     
     subgraph "Development Tools"
-        swagger[Swagger Docs<br/>:8080/swagger]
-        monitor[Performance Monitor<br/>:8080/monitor]
-        profiler[Go Profiler<br/>:8080/debug/pprof]
+        swagger[Swagger Docs<br/>:8082/swagger]
+        monitor[Performance Monitor<br/>:8083/monitor]
+        profiler[Go Profiler<br/>:8084/debug/pprof]
     end
     
     %% Client connections
@@ -184,7 +183,7 @@ flowchart TB
 ### Technical Features
 - **⚙️ Custom Form Logic**: Built without Formik or React Hook Form - implements custom state management using React hooks
 - **🔄 Real-Time Updates**: WebSocket-based live data updates (no basic page reloading)
-- **🧪 Unit Tests**: Comprehensive test coverage for both frontend and backend components
+- **🧪 Unit Tests**: Comprehensive test coverage for both frontend (113 tests) and backend (62.1% by package) components
 - **🚀 Performance Monitoring**: Built-in monitoring and profiling tools → [docs/backend/overview.md#development-tools-integration](docs/backend/overview.md#development-tools-integration)
 
 ### Development Practices
@@ -229,8 +228,9 @@ docker compose up --build
 - **Frontend**: http://localhost:3000
 - **API**: http://localhost:8080
 - **API Health**: http://localhost:8080/health
-- **API Documentation**: http://localhost:8080/swagger/index.html
-- **Performance Monitor**: http://localhost:8080/monitor
+- **API Documentation**: http://localhost:8082/swagger/index.html
+- **Performance Monitor**: http://localhost:8083/monitor
+- **Go Profiling**: http://localhost:8084/debug/pprof
 - **Database UI**: http://localhost:8081 (admin/admin123)
 
 ### Test Account
@@ -253,10 +253,10 @@ docker compose -f docker-compose.prod.yml build
 
 **Common Issues:**
 
-1. **Port conflicts**: Ensure ports 3000, 8080, 8081, 27017 are available
+1. **Port conflicts**: Ensure ports 3000, 8080, 8081, 8082, 8083, 8084, 27017 are available
    ```bash
    # Check port usage
-   lsof -i :3000 -i :8080 -i :8081 -i :27017
+   lsof -i :3000 -i :8080 -i :8081 -i :8082 -i :8083 -i :8084 -i :27017
    ```
 
 2. **Database connection issues**: Check MongoDB container status

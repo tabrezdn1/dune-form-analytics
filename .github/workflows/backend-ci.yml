@@ -5,7 +5,7 @@ on:
 
 jobs:
   format:
-    name: Code Format
+    name: Go Format (gofmt + goimports)
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -21,7 +21,7 @@ jobs:
       run: make fmt-local
 
   lint:
-    name: Lint Check
+    name: Go Lint (golangci-lint + go vet)
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -37,7 +37,7 @@ jobs:
       run: make lint-local
 
   test:
-    name: Unit Tests and Code Coverage
+    name: Go Tests with Coverage
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -51,7 +51,7 @@ jobs:
       run: make test-local
 
   build:
-    name: Build App
+    name: Go Build
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code

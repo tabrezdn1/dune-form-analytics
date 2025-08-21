@@ -42,8 +42,9 @@ flowchart TB
     
     subgraph "Development Tools"
         mongoUI[Mongo Express<br/>Port: 8081]
-        swagger[Swagger Docs<br/>:8080/swagger]
-        monitor[Performance Monitor<br/>:8080/monitor]
+        swagger[Swagger Docs<br/>:8082/swagger]
+        monitor[Performance Monitor<br/>:8083/monitor]
+        profiler[Go Profiler<br/>:8084/debug/pprof]
         profiler[Go Profiler<br/>:8080/debug/pprof]
     end
     

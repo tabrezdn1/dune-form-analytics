@@ -45,11 +45,11 @@ make build-frontend-local       # 5. Build App
 Your PR will automatically run these same 5 checks:
 
 ```bash
-✅ Frontend / Code Format
-✅ Frontend / Lint Check
-✅ Frontend / Type Check  
-✅ Frontend / Unit Tests and Code Coverage
-✅ Frontend / Build App
+✅ Frontend / Prettier Format Check
+✅ Frontend / ESLint + Next.js Rules
+✅ Frontend / TypeScript Compilation
+✅ Frontend / Jest Tests with Coverage
+✅ Frontend / Next.js Production Build
 ```
 
 **All must be green to merge!**
@@ -105,21 +105,33 @@ make build-local   # 4. Build App
 Your PR will automatically run these same 4 checks:
 
 ```bash
-✅ Backend / Code Format
-✅ Backend / Lint Check  
-✅ Backend / Unit Tests and Code Coverage
-✅ Backend / Build App
+✅ Backend / Go Format (gofmt + goimports)
+✅ Backend / Go Lint (golangci-lint + go vet)
+✅ Backend / Go Tests with Coverage
+✅ Backend / Go Build
 ```
 
 **All must be green to merge!**
 
 ### Test Coverage
 
+#### Backend Coverage (Go)
 Current test coverage by package:
 - **pkg/utils**: 62.1% (slug, validation utilities)
 - **internal/models**: 40.0% (data models, transformations)  
 - **internal/config**: 23.7% (configuration management)
 - **internal/services**: 4.9% (auth service core functions)
+
+#### Frontend Coverage (TypeScript/React)  
+Current test coverage: Files with 100% coverage:
+- **auth-utils.ts**: 100% (JWT validation & localStorage)
+- **clipboard.ts**: 100% (browser clipboard utilities)
+- **Button.tsx**: 100% (UI component with variants)
+- **Loading.tsx**: 100% (spinner/dots/pulse + skeleton + overlay)
+- **TextInput.tsx**: 100% (form input with validation)
+- **form-change-analyzer.ts**: 95.58% (form analysis logic)
+
+**Test Statistics:** 7 test suites, 113 tests passing
 
 ### Linting Configuration
 
@@ -189,23 +201,23 @@ This directory contains automated CI/CD workflows for the Dune Form Analytics pr
 ### Frontend Service (`frontend-ci.yml`)
 The Frontend service runs 5 separate jobs in parallel:
 
-#### 1. **Code Format** ✅
-- Prettier code formatting
+#### 1. **Prettier Format Check** ✅
+- Prettier code formatting validation
 - Consistent code style across the project
 
-#### 2. **Lint Check** ✅  
+#### 2. **ESLint + Next.js Rules** ✅  
 - ESLint validation with Next.js and TypeScript rules
 - Import organization and code quality checks
 
-#### 3. **Type Check** ✅
-- TypeScript compilation check
+#### 3. **TypeScript Compilation** ✅
+- TypeScript type checking and compilation
 - Static type validation
 
-#### 4. **Unit Tests and Code Coverage** ✅
+#### 4. **Jest Tests with Coverage** ✅
 - Jest test execution with coverage reporting
 - React Testing Library component tests
 
-#### 5. **Build App** ✅
+#### 5. **Next.js Production Build** ✅
 - Next.js production build verification
 
 ## 🔄 Backend Service Workflow
@@ -220,18 +232,18 @@ The Frontend service runs 5 separate jobs in parallel:
 ### Backend Service (`backend-ci.yml`)
 The Backend service runs 4 separate jobs in parallel:
 
-#### 1. **Code Format** ✅
+#### 1. **Go Format (gofmt + goimports)** ✅
 - Go code formatting (`gofmt`)
 - Import organization (`goimports`)
 
-#### 2. **Lint Check** ✅  
+#### 2. **Go Lint (golangci-lint + go vet)** ✅  
 - Code linting (`golangci-lint` with `go vet` fallback)
 
-#### 3. **Unit Tests and Code Coverage** ✅
+#### 3. **Go Tests with Coverage** ✅
 - Test execution with race detection
 - Code coverage reporting
 
-#### 4. **Build App** ✅
+#### 4. **Go Build** ✅
 - Application build verification
 
 ## 🔧 Local Development Integration
@@ -240,19 +252,19 @@ CI jobs use the exact same make commands as local development:
 
 ### Frontend Commands
 ```bash
-# 1. Code Format → make fmt-frontend-local
-# 2. Lint Check → make lint-frontend-local
-# 3. Type Check → make type-check-frontend-local
-# 4. Unit Tests and Code Coverage → make test-frontend-local
-# 5. Build App → make build-frontend-local
+# 1. Prettier Format Check → make fmt-frontend-local
+# 2. ESLint + Next.js Rules → make lint-frontend-local
+# 3. TypeScript Compilation → make type-check-frontend-local
+# 4. Jest Tests with Coverage → make test-frontend-local
+# 5. Next.js Production Build → make build-frontend-local
 ```
 
 ### Backend Commands
 ```bash
-# 1. Code Format → make fmt-local
-# 2. Lint Check → make lint-local  
-# 3. Unit Tests and Code Coverage → make test-local
-# 4. Build App → make build-local
+# 1. Go Format (gofmt + goimports) → make fmt-local
+# 2. Go Lint (golangci-lint + go vet) → make lint-local  
+# 3. Go Tests with Coverage → make test-local
+# 4. Go Build → make build-local
 ```
 
 Perfect consistency between local development and CI!
@@ -286,7 +298,7 @@ Add these badges to your README to show build status:
 
 When you create a PR that touches backend code:
 
-1. **4 checks run in parallel**: Code Format, Lint Check, Unit Tests and Code Coverage, Build App
+1. **4 checks run in parallel**: Go Format, Go Lint, Go Tests with Coverage, Go Build
 2. **All must be green** for the PR to be ready to merge
 3. **Local fixes available**: Use `make fmt-local`, `make lint-local`, etc.
 4. **Fast feedback**: Usually completes in 2-3 minutes
