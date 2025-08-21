@@ -1,4 +1,4 @@
-MIT License
+MIT License with Attribution Requirements
 
 Copyright (c) 2025 Tabrez Shaik
 
@@ -9,8 +9,18 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+
+2. APPLICATION ATTRIBUTION REQUIREMENT: Any application, website, or derivative 
+   work that uses this Software or substantial portions thereof MUST display 
+   the attribution "Built by Tabrez Shaik" in a location that is:
+   - Visible to end users of the application
+   - Accessible through the application's footer, about page, credits section, 
+     or similar user-accessible area
+   - Not hidden, obscured, or require special access to view
+   
+   This attribution requirement applies to both commercial and non-commercial use.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
