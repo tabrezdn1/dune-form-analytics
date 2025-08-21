@@ -5,14 +5,45 @@ on:
     branches: [ main, develop ]
     paths:
       - 'apps/api/**'
+      - 'apps/web/**'
       - '.github/workflows/**'
   pull_request:
     branches: [ main, develop ]
     paths:
       - 'apps/api/**'
+      - 'apps/web/**'
       - '.github/workflows/**'
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.changes.outputs.backend }}
+      frontend: ${{ steps.changes.outputs.frontend }}
+      workflows: ${{ steps.changes.outputs.workflows }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Check for changes
+      uses: dorny/paths-filter@v3
+      id: changes
+      with:
+        filters: |
+          backend:
+            - 'apps/api/**'
+          frontend:
+            - 'apps/web/**'
+          workflows:
+            - '.github/workflows/**'
+
   backend:
     name: Backend
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.workflows == 'true'
     uses: ./.github/workflows/backend-ci.yml
+  
+  frontend:
+    name: Frontend
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.workflows == 'true'
+    uses: ./.github/workflows/frontend-ci.yml

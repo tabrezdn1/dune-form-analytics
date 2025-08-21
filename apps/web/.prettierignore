@@ -1,0 +1,16 @@
+# Ignore build output and generated files
+.next/
+node_modules/
+coverage/
+dist/
+build/
+out/
+
+# Ignore package-lock.json
+package-lock.json
+
+# Ignore Next.js types
+.next/types/
+
+# Ignore other generated files
+*.tsbuildinfo

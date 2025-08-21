@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import React, { useState } from 'react'
-import { FormField } from '@/lib/types'
+import React, { useState } from 'react';
+import { FormField } from '@/lib/types';
 
 interface FieldPaletteProps {
-  onAddField: (type: FormField['type']) => void
-  className?: string
+  onAddField: (type: FormField['type']) => void;
+  className?: string;
 }
 
 const fieldTypes = [
@@ -14,8 +14,18 @@ const fieldTypes = [
     label: 'Text Input',
     description: 'Single line or multi-line text',
     icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      <svg
+        className='w-5 h-5'
+        fill='none'
+        stroke='currentColor'
+        viewBox='0 0 24 24'
+      >
+        <path
+          strokeLinecap='round'
+          strokeLinejoin='round'
+          strokeWidth={2}
+          d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+        />
       </svg>
     ),
     color: 'text-blue-600 dark:text-blue-400',
@@ -27,8 +37,18 @@ const fieldTypes = [
     label: 'Multiple Choice',
     description: 'Single selection from options',
     icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <svg
+        className='w-5 h-5'
+        fill='none'
+        stroke='currentColor'
+        viewBox='0 0 24 24'
+      >
+        <path
+          strokeLinecap='round'
+          strokeLinejoin='round'
+          strokeWidth={2}
+          d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+        />
       </svg>
     ),
     color: 'text-green-600 dark:text-green-400',
@@ -40,8 +60,18 @@ const fieldTypes = [
     label: 'Checkboxes',
     description: 'Multiple selections allowed',
     icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      <svg
+        className='w-5 h-5'
+        fill='none'
+        stroke='currentColor'
+        viewBox='0 0 24 24'
+      >
+        <path
+          strokeLinecap='round'
+          strokeLinejoin='round'
+          strokeWidth={2}
+          d='M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'
+        />
       </svg>
     ),
     color: 'text-purple-600 dark:text-purple-400',
@@ -53,32 +83,36 @@ const fieldTypes = [
     label: 'Rating Scale',
     description: 'Star or number rating',
     icon: (
-      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+      <svg className='w-5 h-5' fill='currentColor' viewBox='0 0 20 20'>
+        <path d='M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z' />
       </svg>
     ),
     color: 'text-yellow-600 dark:text-yellow-400',
     bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
     borderColor: 'border-yellow-200 dark:border-yellow-800',
   },
-]
+];
 
-export function FieldPalette({ onAddField, className = '' }: FieldPaletteProps) {
-  const [draggedType, setDraggedType] = useState<string | null>(null)
+export function FieldPalette({
+  onAddField,
+  className = '',
+}: FieldPaletteProps) {
+  const [draggedType, setDraggedType] = useState<string | null>(null);
 
   return (
     <div className={`space-y-4 ${className}`}>
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+      <div className='mb-4'>
+        <h3 className='text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2'>
           Field Types
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          <span className="hidden sm:inline">Drag and drop or </span>Click to add fields to your form
+        <p className='text-sm text-gray-600 dark:text-gray-400'>
+          <span className='hidden sm:inline'>Drag and drop or </span>Click to
+          add fields to your form
         </p>
       </div>
 
-      <div className="space-y-3">
-        {fieldTypes.map((fieldType) => (
+      <div className='space-y-3'>
+        {fieldTypes.map(fieldType => (
           <button
             key={fieldType.type}
             onClick={() => onAddField(fieldType.type)}
@@ -91,25 +125,27 @@ export function FieldPalette({ onAddField, className = '' }: FieldPaletteProps) 
               group cursor-pointer
             `}
             draggable
-            onDragStart={(e) => {
-              setDraggedType(fieldType.type)
-              e.dataTransfer.setData('fieldType', fieldType.type)
-              e.dataTransfer.setData('text/plain', fieldType.type) // Fallback for compatibility
-              e.dataTransfer.effectAllowed = 'copy'
+            onDragStart={e => {
+              setDraggedType(fieldType.type);
+              e.dataTransfer.setData('fieldType', fieldType.type);
+              e.dataTransfer.setData('text/plain', fieldType.type); // Fallback for compatibility
+              e.dataTransfer.effectAllowed = 'copy';
             }}
             onDragEnd={() => {
-              setDraggedType(null)
+              setDraggedType(null);
             }}
           >
-            <div className="flex items-center space-x-3">
-              <div className={`${fieldType.color} group-hover:scale-110 transition-transform`}>
+            <div className='flex items-center space-x-3'>
+              <div
+                className={`${fieldType.color} group-hover:scale-110 transition-transform`}
+              >
                 {fieldType.icon}
               </div>
-              <div className="text-left">
+              <div className='text-left'>
                 <div className={`font-medium ${fieldType.color}`}>
                   {fieldType.label}
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
+                <div className='text-xs text-gray-500 dark:text-gray-400'>
                   {fieldType.description}
                 </div>
               </div>
@@ -119,32 +155,50 @@ export function FieldPalette({ onAddField, className = '' }: FieldPaletteProps) 
       </div>
 
       {/* Instructions */}
-      <div className="mt-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center space-x-2">
-          <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <div className='mt-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-lg border border-gray-200 dark:border-gray-600'>
+        <h4 className='text-sm font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center space-x-2'>
+          <svg
+            className='w-4 h-4 text-emerald-600 dark:text-emerald-400'
+            fill='none'
+            stroke='currentColor'
+            viewBox='0 0 24 24'
+          >
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth={2}
+              d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+            />
           </svg>
           <span>How to use:</span>
         </h4>
-        <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-2">
-          <li className="flex items-center space-x-2">
-            <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
-            <span><strong>Click</strong> a field type to add it to the end</span>
+        <ul className='text-xs text-gray-600 dark:text-gray-400 space-y-2'>
+          <li className='flex items-center space-x-2'>
+            <div className='w-1 h-1 bg-emerald-500 rounded-full'></div>
+            <span>
+              <strong>Click</strong> a field type to add it to the end
+            </span>
           </li>
-          <li className="flex items-center space-x-2">
-            <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
-            <span><strong>Drag</strong> field types to specific positions</span>
+          <li className='flex items-center space-x-2'>
+            <div className='w-1 h-1 bg-emerald-500 rounded-full'></div>
+            <span>
+              <strong>Drag</strong> field types to specific positions
+            </span>
           </li>
-          <li className="flex items-center space-x-2">
-            <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
-            <span><strong>Click</strong> existing fields to edit properties</span>
+          <li className='flex items-center space-x-2'>
+            <div className='w-1 h-1 bg-emerald-500 rounded-full'></div>
+            <span>
+              <strong>Click</strong> existing fields to edit properties
+            </span>
           </li>
-          <li className="flex items-center space-x-2">
-            <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
-            <span><strong>Drag</strong> existing fields to reorder them</span>
+          <li className='flex items-center space-x-2'>
+            <div className='w-1 h-1 bg-emerald-500 rounded-full'></div>
+            <span>
+              <strong>Drag</strong> existing fields to reorder them
+            </span>
           </li>
         </ul>
       </div>
     </div>
-  )
+  );
 }

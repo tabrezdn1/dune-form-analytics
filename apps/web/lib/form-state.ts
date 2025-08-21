@@ -1,5 +1,5 @@
-import { useReducer, useCallback } from 'react'
-import { FormState, FormAction, FormField, ValidationError } from './types'
+import { useReducer, useCallback } from 'react';
+import { FormState, FormAction, FormField, ValidationError } from './types';
 
 // Initial form state
 const initialFormState: FormState = {
@@ -8,250 +8,281 @@ const initialFormState: FormState = {
   touched: {},
   isSubmitting: false,
   isValid: false,
-}
+};
 
 // Form reducer
 function formReducer(state: FormState, action: FormAction): FormState {
   switch (action.type) {
     case 'SET_FIELD': {
-      const { fieldId, value } = action.payload
-      const newValues = { ...state.values, [fieldId]: value }
-      const newErrors = { ...state.errors }
-      
+      const { fieldId, value } = action.payload;
+      const newValues = { ...state.values, [fieldId]: value };
+      const newErrors = { ...state.errors };
+
       // Clear error when field value changes
       if (newErrors[fieldId]) {
-        delete newErrors[fieldId]
+        delete newErrors[fieldId];
       }
-      
+
       return {
         ...state,
         values: newValues,
         errors: newErrors,
         isValid: Object.keys(newErrors).length === 0,
-      }
+      };
     }
-    
+
     case 'SET_ERROR': {
-      const { fieldId, error } = action.payload
-      const newErrors = { ...state.errors, [fieldId]: error }
-      
+      const { fieldId, error } = action.payload;
+      const newErrors = { ...state.errors, [fieldId]: error };
+
       return {
         ...state,
         errors: newErrors,
         isValid: false,
-      }
+      };
     }
-    
+
     case 'CLEAR_ERROR': {
-      const { fieldId } = action.payload
-      const newErrors = { ...state.errors }
-      delete newErrors[fieldId]
-      
+      const { fieldId } = action.payload;
+      const newErrors = { ...state.errors };
+      delete newErrors[fieldId];
+
       return {
         ...state,
         errors: newErrors,
         isValid: Object.keys(newErrors).length === 0,
-      }
+      };
     }
-    
+
     case 'SET_TOUCHED': {
-      const { fieldId } = action.payload
+      const { fieldId } = action.payload;
       return {
         ...state,
         touched: { ...state.touched, [fieldId]: true },
-      }
+      };
     }
-    
+
     case 'SET_SUBMITTING': {
       return {
         ...state,
         isSubmitting: action.payload,
-      }
+      };
     }
-    
+
     case 'SET_ERRORS': {
       return {
         ...state,
         errors: action.payload,
         isValid: Object.keys(action.payload).length === 0,
-      }
+      };
     }
-    
+
     case 'RESET_FORM': {
-      return initialFormState
+      return initialFormState;
     }
-    
+
     default:
-      return state
+      return state;
   }
 }
 
 // Custom hook for form state management
 export function useFormState(fields: FormField[] = []) {
-  const [state, dispatch] = useReducer(formReducer, initialFormState)
+  const [state, dispatch] = useReducer(formReducer, initialFormState);
 
   const setFieldValue = useCallback((fieldId: string, value: any) => {
-    dispatch({ type: 'SET_FIELD', payload: { fieldId, value } })
-  }, [])
+    dispatch({ type: 'SET_FIELD', payload: { fieldId, value } });
+  }, []);
 
   const setFieldError = useCallback((fieldId: string, error: string) => {
-    dispatch({ type: 'SET_ERROR', payload: { fieldId, error } })
-  }, [])
+    dispatch({ type: 'SET_ERROR', payload: { fieldId, error } });
+  }, []);
 
   const clearFieldError = useCallback((fieldId: string) => {
-    dispatch({ type: 'CLEAR_ERROR', payload: { fieldId } })
-  }, [])
+    dispatch({ type: 'CLEAR_ERROR', payload: { fieldId } });
+  }, []);
 
   const setFieldTouched = useCallback((fieldId: string) => {
-    dispatch({ type: 'SET_TOUCHED', payload: { fieldId } })
-  }, [])
+    dispatch({ type: 'SET_TOUCHED', payload: { fieldId } });
+  }, []);
 
   const setSubmitting = useCallback((isSubmitting: boolean) => {
-    dispatch({ type: 'SET_SUBMITTING', payload: isSubmitting })
-  }, [])
+    dispatch({ type: 'SET_SUBMITTING', payload: isSubmitting });
+  }, []);
 
   const setErrors = useCallback((errors: Record<string, string>) => {
-    dispatch({ type: 'SET_ERRORS', payload: errors })
-  }, [])
+    dispatch({ type: 'SET_ERRORS', payload: errors });
+  }, []);
 
   const resetForm = useCallback(() => {
-    dispatch({ type: 'RESET_FORM' })
-  }, [])
+    dispatch({ type: 'RESET_FORM' });
+  }, []);
 
-  const validateField = useCallback((field: FormField, value: any): string | null => {
-    if (field.required && (value === undefined || value === null || value === '')) {
-      return `${field.label} is required`
-    }
+  const validateField = useCallback(
+    (field: FormField, value: any): string | null => {
+      if (
+        field.required &&
+        (value === undefined || value === null || value === '')
+      ) {
+        return `${field.label} is required`;
+      }
 
-    if (!field.required && (value === undefined || value === null || value === '')) {
-      return null
-    }
-    switch (field.type) {
-      case 'text':
-        if (typeof value !== 'string') return 'Invalid text value'
-        
-        if (field.validation?.minLen && value.length < field.validation.minLen) {
-          return `Minimum length is ${field.validation.minLen} characters`
-        }
-        
-        if (field.validation?.maxLen && value.length > field.validation.maxLen) {
-          return `Maximum length is ${field.validation.maxLen} characters`
-        }
-        
-        if (field.validation?.pattern) {
-          const regex = new RegExp(field.validation.pattern)
-          if (!regex.test(value)) {
-            return 'Invalid format'
+      if (
+        !field.required &&
+        (value === undefined || value === null || value === '')
+      ) {
+        return null;
+      }
+      switch (field.type) {
+        case 'text':
+          if (typeof value !== 'string') return 'Invalid text value';
+
+          if (
+            field.validation?.minLen &&
+            value.length < field.validation.minLen
+          ) {
+            return `Minimum length is ${field.validation.minLen} characters`;
           }
-        }
-        break
 
-      case 'rating':
-        if (typeof value !== 'number') return 'Invalid rating value'
-        
-        if (field.validation?.min && value < field.validation.min) {
-          return `Minimum rating is ${field.validation.min}`
-        }
-        
-        if (field.validation?.max && value > field.validation.max) {
-          return `Maximum rating is ${field.validation.max}`
-        }
-        break
+          if (
+            field.validation?.maxLen &&
+            value.length > field.validation.maxLen
+          ) {
+            return `Maximum length is ${field.validation.maxLen} characters`;
+          }
 
-      case 'mcq':
-        if (typeof value !== 'string') return 'Invalid selection'
-        
-        const validOptions = field.options?.map(opt => opt.id) || []
-        if (!validOptions.includes(value)) {
-          return 'Invalid option selected'
-        }
-        break
+          if (field.validation?.pattern) {
+            const regex = new RegExp(field.validation.pattern);
+            if (!regex.test(value)) {
+              return 'Invalid format';
+            }
+          }
+          break;
 
-      case 'checkbox':
-        if (!Array.isArray(value)) return 'Invalid selection'
-        
-        const validCheckboxOptions = field.options?.map(opt => opt.id) || []
-        const invalidSelections = value.filter(v => !validCheckboxOptions.includes(v))
-        if (invalidSelections.length > 0) {
-          return 'Invalid options selected'
-        }
-        break
-    }
+        case 'rating':
+          if (typeof value !== 'number') return 'Invalid rating value';
 
-    return null
-  }, [])
+          if (field.validation?.min && value < field.validation.min) {
+            return `Minimum rating is ${field.validation.min}`;
+          }
+
+          if (field.validation?.max && value > field.validation.max) {
+            return `Maximum rating is ${field.validation.max}`;
+          }
+          break;
+
+        case 'mcq':
+          if (typeof value !== 'string') return 'Invalid selection';
+
+          const validOptions = field.options?.map(opt => opt.id) || [];
+          if (!validOptions.includes(value)) {
+            return 'Invalid option selected';
+          }
+          break;
+
+        case 'checkbox':
+          if (!Array.isArray(value)) return 'Invalid selection';
+
+          const validCheckboxOptions = field.options?.map(opt => opt.id) || [];
+          const invalidSelections = value.filter(
+            v => !validCheckboxOptions.includes(v)
+          );
+          if (invalidSelections.length > 0) {
+            return 'Invalid options selected';
+          }
+          break;
+      }
+
+      return null;
+    },
+    []
+  );
 
   // Validate all fields
   const validateForm = useCallback(() => {
-    const errors: Record<string, string> = {}
-    
+    const errors: Record<string, string> = {};
+
     fields.forEach(field => {
       // Check if field should be visible based on conditional logic
       if (field.visibility && !isFieldVisible(field, state.values)) {
-        return // Skip validation for hidden fields
+        return; // Skip validation for hidden fields
       }
 
-      const value = state.values[field.id]
-      const error = validateField(field, value)
-      
+      const value = state.values[field.id];
+      const error = validateField(field, value);
+
       if (error) {
-        errors[field.id] = error
+        errors[field.id] = error;
       }
-    })
+    });
 
-    setErrors(errors)
-    return Object.keys(errors).length === 0
-  }, [fields, state.values, validateField, setErrors])
+    setErrors(errors);
+    return Object.keys(errors).length === 0;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fields, state.values, validateField, setErrors]); // isFieldVisible would cause circular dependency
 
   // Check if field should be visible based on conditional logic
-  const isFieldVisible = useCallback((field: FormField, values: Record<string, any>): boolean => {
-    if (!field.visibility) return true
+  const isFieldVisible = useCallback(
+    (field: FormField, values: Record<string, any>): boolean => {
+      if (!field.visibility) return true;
 
-    const { whenFieldId, op, value: conditionValue } = field.visibility
-    const fieldValue = values[whenFieldId]
+      const { whenFieldId, op, value: conditionValue } = field.visibility;
+      const fieldValue = values[whenFieldId];
 
-    switch (op) {
-      case 'eq':
-        return fieldValue === conditionValue
-      case 'ne':
-        return fieldValue !== conditionValue
-      case 'in':
-        return Array.isArray(conditionValue) && conditionValue.includes(fieldValue)
-      case 'gt':
-        return typeof fieldValue === 'number' && fieldValue > conditionValue
-      case 'lt':
-        return typeof fieldValue === 'number' && fieldValue < conditionValue
-      default:
-        return true
-    }
-  }, [])
+      switch (op) {
+        case 'eq':
+          return fieldValue === conditionValue;
+        case 'ne':
+          return fieldValue !== conditionValue;
+        case 'in':
+          return (
+            Array.isArray(conditionValue) && conditionValue.includes(fieldValue)
+          );
+        case 'gt':
+          return typeof fieldValue === 'number' && fieldValue > conditionValue;
+        case 'lt':
+          return typeof fieldValue === 'number' && fieldValue < conditionValue;
+        default:
+          return true;
+      }
+    },
+    []
+  );
 
   // Get visible fields
   const getVisibleFields = useCallback(() => {
-    return fields.filter(field => isFieldVisible(field, state.values))
-  }, [fields, state.values, isFieldVisible])
+    return fields.filter(field => isFieldVisible(field, state.values));
+  }, [fields, state.values, isFieldVisible]);
 
   // Convert form state to submission format
   const getSubmissionData = useCallback(() => {
-    const visibleFields = getVisibleFields()
+    const visibleFields = getVisibleFields();
     const answers = visibleFields
-      .filter(field => state.values[field.id] !== undefined && state.values[field.id] !== null && state.values[field.id] !== '')
+      .filter(
+        field =>
+          state.values[field.id] !== undefined &&
+          state.values[field.id] !== null &&
+          state.values[field.id] !== ''
+      )
       .map(field => ({
         fieldId: field.id,
         value: state.values[field.id],
-      }))
+      }));
 
-    return { answers }
-  }, [state.values, getVisibleFields])
+    return { answers };
+  }, [state.values, getVisibleFields]);
 
   // Handle validation errors from API
-  const handleValidationErrors = useCallback((validationErrors: ValidationError[]) => {
-    const errorMap: Record<string, string> = {}
-    validationErrors.forEach(error => {
-      errorMap[error.field] = error.message
-    })
-    setErrors(errorMap)
-  }, [setErrors])
+  const handleValidationErrors = useCallback(
+    (validationErrors: ValidationError[]) => {
+      const errorMap: Record<string, string> = {};
+      validationErrors.forEach(error => {
+        errorMap[error.field] = error.message;
+      });
+      setErrors(errorMap);
+    },
+    [setErrors]
+  );
 
   return {
     // State
@@ -279,5 +310,5 @@ export function useFormState(fields: FormField[] = []) {
     isFieldVisible,
     getVisibleFields,
     getSubmissionData,
-  }
+  };
 }

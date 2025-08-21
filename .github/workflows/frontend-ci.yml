@@ -1,0 +1,90 @@
+name: Frontend
+
+on:
+  workflow_call:
+
+jobs:
+  format:
+    name: Code Format
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: apps/web/package-lock.json
+    - name: Install dependencies
+      run: make install-frontend-deps
+    - name: Check code format
+      run: make fmt-frontend-local
+
+  lint:
+    name: Lint Check
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: apps/web/package-lock.json
+    - name: Install dependencies
+      run: make install-frontend-deps
+    - name: Run linting
+      run: make lint-frontend-local
+
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: apps/web/package-lock.json
+    - name: Install dependencies
+      run: make install-frontend-deps
+    - name: Run type checking
+      run: make type-check-frontend-local
+
+  test:
+    name: Unit Tests and Code Coverage
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: apps/web/package-lock.json
+    - name: Install dependencies
+      run: make install-frontend-deps
+    - name: Run tests
+      run: make test-frontend-local
+
+  build:
+    name: Build App
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: apps/web/package-lock.json
+    - name: Install dependencies
+      run: make install-frontend-deps
+    - name: Build application
+      run: make build-frontend-local

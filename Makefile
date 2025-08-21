@@ -43,6 +43,8 @@ fmt: ## Format code (prettier + go fmt) - Docker
 	docker compose exec api go fmt ./...
 
 # Local development commands (run without Docker)
+
+# Backend local commands
 lint-local: ## Run backend linter locally (requires golangci-lint)
 	@echo "🔍 Running Go linter locally..."
 	cd apps/api && $(shell go env GOPATH)/bin/golangci-lint run ./... || (echo "⚠️  golangci-lint failed, falling back to basic go tools..." && go vet ./... && echo "✅ Basic go vet passed")
@@ -70,6 +72,35 @@ install-tools: ## Install required Go tools locally
 	@echo "✅ goimports installed"
 	@echo "✅ golangci-lint already installed"
 	@echo "All Go tools ready for local development!"
+
+# Frontend local commands
+install-frontend-deps: ## Install frontend dependencies
+	@echo "📦 Installing frontend dependencies..."
+	cd apps/web && npm ci
+
+lint-frontend-local: ## Run frontend linter locally
+	@echo "🔍 Running frontend linter locally..."
+	cd apps/web && npm run lint
+
+fmt-frontend-local: ## Format frontend code locally
+	@echo "✨ Formatting frontend code locally..."
+	cd apps/web && npm run format:check
+
+type-check-frontend-local: ## Run TypeScript type checking locally
+	@echo "🔍 Running TypeScript type checking locally..."
+	cd apps/web && npm run type-check
+
+test-frontend-local: ## Run frontend tests locally
+	@echo "🧪 Running frontend tests locally..."
+	cd apps/web && npm run test:coverage
+
+build-frontend-local: ## Build frontend locally
+	@echo "🔨 Building frontend locally..."
+	cd apps/web && npm run build
+
+run-frontend-local: ## Run frontend locally
+	@echo "🚀 Starting frontend locally..."
+	cd apps/web && npm run dev
 
 seed: ## Seed database with sample data
 	@echo "🌱 Seeding database..."

@@ -1,19 +1,58 @@
 # Dune Forms
 
-**Professional form builder with real-time analytics and drag-and-drop interface.**
+**Dynamic, customizable form builder with real-time analytics and drag-and-drop interface.**
 
 ## Product Overview
 
 Dune Forms is a form creation and analytics platform that enables users to build interactive forms with real-time data visualization. The platform provides a visual drag-and-drop form builder, analytics dashboard, and live response tracking through WebSocket connections.
 
 **Key Features:**
-- **Visual Form Builder**: Drag-and-drop interface for creating forms
-- **Real-Time Analytics**: Live updates on form responses via WebSockets
+- **Visual Form Builder**: Drag-and-drop interface for creating forms with custom form logic
+- **Real-Time Analytics**: Live updates on form responses via WebSockets (built from scratch)
+- **Shareable Form Links**: Generate unique public URLs for each form
 - **User Authentication**: JWT-based authentication with refresh tokens
 - **Multiple Field Types**: Text, multiple-choice, checkbox, and rating fields
 - **Conditional Logic**: Dynamic field visibility based on responses
 - **Data Export**: CSV and PDF export for responses and analytics
+- **Dark Mode**: Toggle between light and dark themes
+- **Custom State Management**: Built with React hooks without third-party form libraries
+- **Unit Tests**: Comprehensive test coverage for frontend and backend
 - **Development Tools**: Built-in monitoring and profiling tools
+
+## Live Demo
+
+🚀 **Live Demo Video**
+
+<div align="center">
+  <iframe 
+    src="https://drive.google.com/file/d/1oXj1Ejf_3iE8C-Lh4xrJIMNmPWKM4yoo/preview" 
+    width="640" 
+    height="360" 
+    frameborder="0" 
+    allowfullscreen>
+  </iframe>
+</div>
+
+> **📺 Full Video**: [Watch on Google Drive](https://drive.google.com/file/d/1oXj1Ejf_3iE8C-Lh4xrJIMNmPWKM4yoo/view) if the embedded player doesn't work
+
+### Quick Demo Walkthrough
+
+1. **Visit the demo** and log in with: `test@test.com` / `Test@123`
+2. **Create a form** using the drag-and-drop builder
+3. **Share the form** using the generated public link
+4. **Submit responses** and watch real-time analytics update instantly
+5. **Export data** as CSV or PDF to see the export functionality
+
+### Demo Highlights
+
+- **Real-time analytics** updating without page refresh
+- **Drag-and-drop form building** with live preview
+- **Custom field types** with validation
+- **Conditional logic** showing/hiding fields based on responses
+- **Dark mode toggle** for improved UX
+- **Mobile-responsive design** working across devices
+
+> **Note**: The demo is deployed using Docker containers on a cloud provider, demonstrating the production-ready nature of the application.
 
 ## Tech Stack
 
@@ -128,14 +167,33 @@ flowchart TB
 
 ## Features
 
-- **🎨 Visual Form Builder**: Drag-and-drop interface for creating forms → [docs/frontend/overview.md#form-builder](docs/frontend/overview.md#form-builder)
-- **📊 Real-Time Analytics**: Live response tracking and metrics → [docs/backend/websockets.md](docs/backend/websockets.md)
-- **🔐 Secure Authentication**: JWT-based auth with refresh tokens → [docs/backend/api-rest.md#authentication-endpoints](docs/backend/api-rest.md#authentication-endpoints)
-- **🔄 Field Types**: Text, MCQ, checkbox, and rating fields → [docs/backend/api-rest.md#field-types](docs/backend/api-rest.md#field-types)
-- **⚡ Conditional Logic**: Dynamic field visibility → [docs/architecture/data-model.md](docs/architecture/data-model.md)
-- **📤 Data Export**: CSV and PDF export for responses and analytics → [docs/backend/api-rest.md#export-responses-csv](docs/backend/api-rest.md#export-responses-csv)
+### Core Features
+- **🎨 Visual Form Builder**: Custom drag-and-drop interface built from scratch for creating forms with field validation and draft saving → [docs/frontend/overview.md#form-builder](docs/frontend/overview.md#form-builder)
+- **📊 Real-Time Analytics Dashboard**: Custom-built dashboard with live response tracking and trend visualization (no third-party analytics libraries) → [docs/backend/websockets.md](docs/backend/websockets.md)
+- **🔗 Shareable Form Links**: Generate unique public URLs for each form that can be shared with respondents
+- **🔐 Secure Authentication**: JWT-based auth with refresh tokens for personalized form management → [docs/backend/api-rest.md#authentication-endpoints](docs/backend/api-rest.md#authentication-endpoints)
+- **🔄 Multiple Field Types**: Text, multiple-choice, checkboxes, and rating fields with custom validation → [docs/backend/api-rest.md#field-types](docs/backend/api-rest.md#field-types)
+
+### Advanced Features  
+- **⚡ Conditional Logic**: Show/hide fields based on previous answers (e.g., "If question 3 = 'Yes', show question 4") → [docs/architecture/data-model.md](docs/architecture/data-model.md)
+- **📤 Data Export**: Export form responses as CSV files or PDF reports → [docs/backend/api-rest.md#export-responses-csv](docs/backend/api-rest.md#export-responses-csv)
+- **📈 Survey Trends**: Analyze response patterns, average ratings, most common answers, and skipped questions
+- **🌙 Dark Mode**: Toggle between light and dark themes for improved user experience
 - **📱 Responsive Design**: Mobile-optimized user interface → [docs/frontend/overview.md](docs/frontend/overview.md)
-- **🚀 Performance Monitoring**: Built-in monitoring and profiling → [docs/backend/overview.md#development-tools-integration](docs/backend/overview.md#development-tools-integration)
+
+### Technical Features
+- **⚙️ Custom Form Logic**: Built without Formik or React Hook Form - implements custom state management using React hooks
+- **🔄 Real-Time Updates**: WebSocket-based live data updates (no basic page reloading)
+- **🧪 Unit Tests**: Comprehensive test coverage for both frontend and backend components
+- **🚀 Performance Monitoring**: Built-in monitoring and profiling tools → [docs/backend/overview.md#development-tools-integration](docs/backend/overview.md#development-tools-integration)
+
+### Development Practices
+- **Container-First**: Docker-based development and deployment for consistency across environments  
+- **Comprehensive Testing**: Unit tests for both frontend React components and backend Go services
+- **API Documentation**: Auto-generated Swagger documentation with complete endpoint coverage
+- **Performance Monitoring**: Built-in profiling and monitoring endpoints for production insights
+
+This implementation showcases the ability to build complex, production-ready applications without relying on heavy third-party frameworks, demonstrating deep understanding of the underlying technologies.
 
 ## How to Set Up
 
@@ -219,6 +277,117 @@ make logs           # View all logs
 make restart        # Restart all services
 make clean          # Clean up containers and volumes
 ```
+
+## How to Test Real-Time Analytics
+
+The application includes comprehensive real-time analytics that update live as form responses are submitted. Here's how to test this functionality:
+
+### Testing Setup
+
+1. **Start the application** and ensure all services are running:
+   ```bash
+   docker compose up --build
+   ```
+
+2. **Open multiple browser windows/tabs**:
+   - **Tab 1**: Form Builder/Analytics Dashboard - http://localhost:3000
+   - **Tab 2**: Public form submission - (you'll get this URL after creating a form)
+
+### Step-by-Step Testing
+
+**Step 1: Create a Test Form**
+1. Log in with test credentials (test@test.com / Test@123)
+2. Navigate to Form Builder and create a form with various field types:
+   - Text field: "What's your name?"
+   - Multiple choice: "How did you hear about us?" (Option A, Option B, Option C)
+   - Rating: "Rate our service" (1-5 stars)
+   - Checkbox: "Which features interest you?" (Feature X, Feature Y, Feature Z)
+
+**Step 2: Set Up Real-Time Monitoring**
+1. After creating the form, you will be navigated to the Analytics Dashboard of that form
+2. Keep this tab open - you'll see live updates here
+3. Copy the shareable link of the form/View form button
+
+**Step 3: Test Live Updates**
+1. In a new tab/window, open the shareable form URL
+2. Submit responses while keeping the analytics dashboard visible
+3. **Watch for immediate updates** without page refresh:
+   - Response count increases instantly
+   - Charts update with new data points
+   - Field-specific analytics refresh in real-time
+   - Trend analysis updates automatically
+
+### What You Should See in Real-Time
+
+- **Response Counter**: Increments immediately upon form submission
+- **Field Distribution Charts**: Bar/pie charts updating with new response data
+- **Rating Averages**: Recalculated and displayed instantly
+- **Response Timeline**: New submissions appearing in chronological order
+- **Trend Analysis**: Insights like "most common answer" updating live
+
+### WebSocket Connection Verification
+
+You can verify the WebSocket connection is working by:
+1. Opening browser developer tools (F12)
+2. Go to Network tab and filter by "WS" (WebSocket)
+3. You should see an active WebSocket connection to `ws://localhost:8080`
+4. When forms are submitted, you'll see WebSocket messages in the connection
+
+### Multi-User Testing
+
+For comprehensive testing:
+1. Use multiple browser sessions or incognito windows
+2. Have different users submit responses simultaneously
+3. Watch how the dashboard aggregates data from multiple concurrent submissions
+
+## Assumptions Made & Challenges Faced
+
+### Design Assumptions
+
+1. **User Experience Priority**: User is a Dune Security customer, so aligned the theme and UX with the same theme.
+2. **Real-Time Requirements**: Assumed that if user edits the form and removes any field then analytics are reset/ analytics are not reset if new field is added or label is updated.
+
+### Technical Assumptions
+
+1. **Deployment Environment**: Assumed Docker-based deployment for consistency across environments
+2. **API Design**: Assumed RESTful APIs with WebSocket supplements provide optimal architecture
+
+### Challenges Faced & Solutions
+
+**1. Custom Form State Management**
+- **Challenge**: Building form state management from scratch without React Hook Form/Formik
+- **Solution**: Implemented custom hooks with useReducer for complex form state, validation, and field updates
+- **Learning**: Custom implementation provides better control but requires more comprehensive testing
+
+**2. Real-Time Analytics Performance**
+- **Challenge**: Ensuring WebSocket updates don't overwhelm the UI with high-frequency submissions
+- **Solution**: Implemented debouncing and batch updates for analytics calculations
+- **Learning**: Real-time doesn't mean instant - smart batching improves user experience
+
+**3. Drag-and-Drop Implementation**
+- **Challenge**: Creating smooth drag-and-drop without external libraries
+- **Solution**: Used HTML5 Drag and Drop API with custom touch handling for mobile
+- **Learning**: Native APIs provide better performance but require more cross-browser testing
+
+**4. MongoDB Schema Design**
+- **Challenge**: Balancing flexibility for dynamic forms with query performance
+- **Solution**: Hybrid approach - structured metadata with flexible response storage
+- **Learning**: Document databases require different optimization strategies than relational DBs
+
+**5. Authentication Security**
+- **Challenge**: Implementing secure JWT handling with refresh tokens
+- **Solution**: HttpOnly cookies for refresh tokens, memory storage for access tokens
+- **Learning**: Security vs UX requires careful balance and clear expiration handling
+
+**6. Testing Strategy**
+- **Challenge**: Implementing Unit test in monorepo for two different tech stacks and apps.
+- **Solution**: Custom integration by seperating two process.
+- **Learning**: Can run if case on jobs based on which directoy the code change occoured, for ex: if apps/web was changed then only trigger UI test cases vice-versa for apps/api.
+
+**7. Dark Mode Implementation**
+- **Challenge**: Ensuring consistent theming across complex UI components
+- **Solution**: CSS custom properties with Tailwind's dark mode utilities
+- **Learning**: Design systems need theme consistency from the start, not as an afterthought
 
 ## Links to Deep-Dive Documentation
 

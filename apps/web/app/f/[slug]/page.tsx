@@ -1,27 +1,29 @@
-import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { PublicFormView } from './PublicFormView'
-import { ThemeScript } from '@/components/ui/ThemeScript'
-import { api } from '@/lib/api'
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { PublicFormView } from './PublicFormView';
+import { ThemeScript } from '@/components/ui/ThemeScript';
+import { api } from '@/lib/api';
 
 // Disable static generation and caching for this dynamic route
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface PublicFormPageProps {
-  params: { slug: string }
+  params: { slug: string };
 }
 
 // Generate metadata for SEO
-export async function generateMetadata({ params }: PublicFormPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PublicFormPageProps): Promise<Metadata> {
   try {
-    const response = await api.getPublicForm(params.slug)
-    const form = response.data
+    const response = await api.getPublicForm(params.slug);
+    const form = response.data;
 
     if (!form) {
       return {
         title: 'Form Not Found - Dune Forms',
-      }
+      };
     }
 
     return {
@@ -36,21 +38,21 @@ export async function generateMetadata({ params }: PublicFormPageProps): Promise
         index: true,
         follow: true,
       },
-    }
+    };
   } catch (error) {
     return {
       title: 'Form Not Found - Dune Forms',
-    }
+    };
   }
 }
 
 export default async function PublicFormPage({ params }: PublicFormPageProps) {
   try {
-    const response = await api.getPublicForm(params.slug)
-    const form = response.data
+    const response = await api.getPublicForm(params.slug);
+    const form = response.data;
 
     if (!form) {
-      notFound()
+      notFound();
     }
 
     return (
@@ -58,8 +60,8 @@ export default async function PublicFormPage({ params }: PublicFormPageProps) {
         <ThemeScript />
         <PublicFormView form={form} />
       </>
-    )
+    );
   } catch (error) {
-    notFound()
+    notFound();
   }
 }
